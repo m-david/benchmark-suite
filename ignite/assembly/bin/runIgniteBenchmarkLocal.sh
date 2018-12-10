@@ -20,16 +20,15 @@ GC_OPTS="\
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+PrintGCTimeStamps \
+-XX:+PrintCompilation -verbose:gc \
 -Xloggc:$WORK_DIRECTORY/logs/ignite-gc.log"
-
-# -XX:+PrintCompilation -verbose:gc \
 
 if [ -z ${HZ_USE_ASYNC_MAP_STREAMER+x} ];
     then export HZ_USE_ASYNC_MAP_STREAMER=false;
 fi
 
 JAVA_OPTS="-server -showversion \
--Dbenchmark.ignite.addresses=10.212.1.108:10800 \
+-Dbenchmark.ignite.addresses=127.0.0.1:10800 \
 -DIGNITE_QUIET=false \
 $GC_OPTS"
 

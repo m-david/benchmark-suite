@@ -9,7 +9,18 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-CLASS_PATH=\
+
+MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
+GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/ignite-gc.log"
+JAVA_OPTS="-server -showversion \
+-Dbenchmark.ignite.config.xml=$APP_HOME/conf/ignite-cache-local.xml \
+$MEM_OPTS $GC_OPTS"
+
+CLASS_PATH="\
 $APP_HOME/conf:\
 $APP_HOME/benchmark.ignite-1.0-SNAPSHOT.jar:\
-$APP_HOME/lib/*
+$APP_HOME/lib/*"
+
+COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH  com.ignite.poc.Member"
+echo $COMMAND_LINE
+$COMMAND_LINE

@@ -20,7 +20,10 @@ dependencies {
 
 //    compile 'org.apache.ignite:ignite-core:2.7.0'
 
+    compile group: 'javax.cache', name: 'cache-api', version: '1.0.0'
+
     compile group: 'org.apache.ignite', name: 'ignite-core', version: "$IGNITE_VERSION"
+    compile group: 'org.apache.ignite', name: 'ignite-spring', version: "$IGNITE_VERSION"
 
     compile 'org.apache.commons:commons-lang3:3.4'
 

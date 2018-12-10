@@ -2,7 +2,7 @@
 core/build/**
 hazelcast/build/**
 coherence/build/**
-ignite/build/**
+ignite/build
 geode/build/**
 .idea/
 .gradle

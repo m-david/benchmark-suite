@@ -19,8 +19,9 @@ GC_OPTS="\
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+PrintGCTimeStamps \
--XX:+PrintCompilation -verbose:gc \
 -Xloggc:$WORK_DIRECTORY/geode-gc.log"
+
+#-XX:+PrintCompilation -verbose:gc \
 
 JAVA_OPTS="-server -showversion \
     -DgemfirePropertyFile=$APP_HOME/conf/geode-client.properties \

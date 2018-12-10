@@ -1,13 +1,13 @@
 
-core/build/**
-hazelcast/build/**
-coherence/build/**
-ignite/build
-geode/build/**
+**/core/build/*
+**/hazelcast/build/*
+**/coherence/build/*
+**/ignite/build/*
+**/geode/build/*
 .idea/
 .gradle
-build/**
+build/*
 libs/
-*.zip
-*.jar
-*.tar*
+**/*.zip
+**/*.jar
+**/*.tar*

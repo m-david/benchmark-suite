@@ -1,0 +1,3 @@
+
+rootProject.name = 'benchmarkSuite'
+include 'core', 'hazelcast', 'coherence', 'geode', 'ignite', 'jmh-sample'

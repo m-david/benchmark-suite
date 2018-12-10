@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<client-cache 
+	xmlns="http://geode.apache.org/schema/cache" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd" 
+    version="1.0">
+
+    <pool name="client-pool" subscription-enabled="true">
+        <!--<locator host="localhost" port="10680"/>-->
+        <locator host="${LOCATOR_HOST}" port="${LOCATOR_PORT}"/>
+        <!--<server host="${LOCATOR_HOST}" port="40405"/>-->
+    </pool>
+
+    <region name="RiskTradeMap" refid="CACHING_PROXY"/>
+    <region name="RiskTradeMap-read" refid="CACHING_PROXY"/>
+    <region name="RiskTradeMap-offheap" refid="CACHING_PROXY"/>
+
+</client-cache>

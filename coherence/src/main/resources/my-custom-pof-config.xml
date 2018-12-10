@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<pof-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.oracle.com/coherence/coherence-pof-config"
+	xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-pof-config http://xmlns.oracle.com/coherence/coherence-pof-config/1.0/coherence-pof-config.xsd">
+	<user-type-list>
+		<!-- include all "standard" Coherence POF user types -->
+		<include>coherence-pof-config.xml</include>
+		<user-type>
+			<type-id>1165</type-id>
+			<class-name>common.domain.RiskTrade</class-name>
+			<serializer>
+				<class-name>com.coherence.poc.serializer.RiskTradeSerializer</class-name>
+			</serializer>
+		</user-type>
+		<user-type>
+			<type-id>1167</type-id>
+			<class-name>common.domain.TradeSource</class-name>
+			<serializer>
+				<class-name>com.tangosol.io.pof.EnumPofSerializer</class-name>
+			</serializer>
+		</user-type>
+		<user-type>
+			<type-id>1168</type-id>
+			<class-name>common.domain.Action</class-name>
+			<serializer>
+				<class-name>com.tangosol.io.pof.EnumPofSerializer</class-name>
+			</serializer>
+		</user-type>
+		<user-type>
+			<type-id>1169</type-id>
+			<class-name>common.domain.BuySell</class-name>
+			<serializer>
+				<class-name>com.tangosol.io.pof.EnumPofSerializer</class-name>
+			</serializer>
+		</user-type>
+		<user-type>
+			<type-id>1170</type-id>
+			<class-name>common.domain.TradeStatus</class-name>
+			<serializer>
+				<class-name>com.tangosol.io.pof.EnumPofSerializer</class-name>
+			</serializer>
+		</user-type>
+		<user-type>
+			<type-id>1171</type-id>
+			<class-name>common.domain.ProductType</class-name>
+			<serializer>
+				<class-name>com.tangosol.io.pof.EnumPofSerializer</class-name>
+			</serializer>
+		</user-type>
+	</user-type-list>
+</pof-config>
+

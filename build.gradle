@@ -1,0 +1,79 @@
+// benchmark-suite core build.gradle
+
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+
+        classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
+
+    }
+
+}
+
+allprojects {
+
+	apply plugin: 'java'
+	apply plugin: 'idea'
+	apply plugin: 'eclipse'
+
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'me.champeau.gradle.jmh'
+
+
+    tasks.matching { task -> task.name == "test" }.all {
+        outputs.upToDateWhen { false }
+    }
+
+    task collectJars(type: Copy) {
+        into "$projectDir/libs"
+        from configurations.testRuntime
+    }
+
+    task dist(type: Zip, dependsOn: 'collectJars') {
+        dependsOn jar, jmhJar
+        from jar
+        from 'assembly/configs'
+        into('bin') {
+            from 'assembly/bin'
+        }
+        into('lib') {
+            from 'libs'
+            exclude '*-jmh.jar'
+        }
+        into('conf') {
+            from 'src/main/resources'
+        }
+        
+        into('jmh-lib') {
+            from 'build/libs'
+            include '*-jmh.jar'
+        }
+    }
+
+    jmh {
+        fork = 0
+        resultFormat = 'JSON'
+    }
+
+    jmhJar {
+        mergeServiceFiles()
+    }
+
+    task buildAll {
+        dependsOn build, collectJars, dist
+        //, jmhJar
+    }
+
+}
+
+
+

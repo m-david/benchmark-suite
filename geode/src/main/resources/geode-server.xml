@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0"
+    is-server="true"
+>
+
+    <cache-server port="40401" >
+
+    </cache-server>
+
+    <region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>
+
+    <region name="RiskTradeMap-read" refid="PARTITION_REDUNDANT"/>
+
+    <region name="RiskTradeMap-offheap">
+        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true"/>
+        <!--<region-attributes refid="PARTITION_REDUNDANT" />-->
+    </region>
+
+    <function-service>
+        <function>
+            <class-name>com.geode.benchmark.function.CreateIndexFunction</class-name>
+        </function>
+    </function-service>
+</cache>
+

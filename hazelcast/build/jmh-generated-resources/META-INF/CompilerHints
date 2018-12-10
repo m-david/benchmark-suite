@@ -1,0 +1,17 @@
+dontinline,*.*_all_jmhStub
+dontinline,*.*_avgt_jmhStub
+dontinline,*.*_sample_jmhStub
+dontinline,*.*_ss_jmhStub
+dontinline,*.*_thrpt_jmhStub
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.after
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.afterEach
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b01_InsertTradesSingle
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b02_InsertTradesBulk
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b03_InsertTradesSingleOffHeap
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b03a_ClearTradesSingleOffHeap
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b04_GetAllRiskTradesSingle
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b05_GetRiskTradeOneFilter
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b06_GetRiskTradeThreeFilter
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b07_AddIndexOnBookInTradeCacheAndGetDataBookFilter
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.b08_ContinuousQueryCacheWithBookFilter
+inline,com/hazelcast/performance/HazelcastUseCasesBenchmark.before

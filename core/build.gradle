@@ -1,0 +1,5 @@
+// build.gradle
+
+group = 'benchmark.core'
+archivesBaseName = 'benchmark.core'
+version = '1.0-SNAPSHOT'

@@ -1,0 +1,43 @@
+<?xml version='1.0'?>
+
+<coherence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://xmlns.oracle.com/coherence/coherence-operational-config"
+           xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-operational-config http://xmlns.oracle.com/coherence/coherence-cache-config/coherence-operational-config.xsd">
+    <cluster-config>
+        <member-identity>
+            <cluster-name>BENCHMARK</cluster-name>
+        </member-identity>
+
+        <unicast-listener>
+            <well-known-addresses>
+                <!--<socket-address id="1">-->
+                    <!--<address>localhost</address>-->
+                    <!--<port>8088</port>-->
+                <!--</socket-address>-->
+            </well-known-addresses>
+            <!--<address system-property="tangosol.coherence.localhost">localhost</address>-->
+            <!--<port-auto-adjust system-property="tangosol.coherence.localport.adjust">true</port-auto-adjust>-->
+
+        </unicast-listener>
+        <!--<multicast-listener>
+            <time-to-live system-property="tangosol.coherence.ttl">0</time-to-live>
+        </multicast-listener>-->
+        <packet-publisher>
+            <traffic-jam>
+                <maximum-packets>0</maximum-packets>
+            </traffic-jam>
+        </packet-publisher>
+    </cluster-config>
+
+    <!-- Enable this server to allow JMX access, but do not publish an MBean server -->
+    <!--
+    <management-config>
+        <allow-remote-management system-property="tangosol.coherence.management.remote">true
+        </allow-remote-management>
+        <read-only system-property="tangosol.coherence.management.readonly">false</read-only>
+        <default-domain-name/>
+        <service-name>Management</service-name>
+    </management-config>
+    -->
+
+</coherence>

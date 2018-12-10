@@ -28,7 +28,7 @@ if [ -z ${HZ_USE_ASYNC_MAP_STREAMER+x} ];
 fi
 
 JAVA_OPTS="-server -showversion \
--Dhazelcast.config=hazelcast-client.xml \
+-Dhazelcast.config=hazelcast-client-local.xml \
 -Dhazelcast.system.log.enabled=true \
 -Dbenchmark.useAsyncMapStreamer=$HZ_USE_ASYNC_MAP_STREAMER $MEM_OPTS \
 $GC_OPTS"

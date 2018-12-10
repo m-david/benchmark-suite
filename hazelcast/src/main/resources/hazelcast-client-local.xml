@@ -15,7 +15,7 @@
     </group>
     <network>
         <cluster-members>
-            <address>10.212.1.108:5710</address>
+            <address>127.0.0.1:5710</address>
         </cluster-members>
     </network>
 

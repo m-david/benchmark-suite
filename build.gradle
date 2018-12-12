@@ -38,7 +38,7 @@ allprojects {
         from configurations.testRuntime
     }
 
-    task dist(type: Zip, dependsOn: 'collectJars') {
+    task dist(type: Tar, dependsOn: 'collectJars') {
         dependsOn jar, jmhJar
         from jar
         from 'assembly/configs'

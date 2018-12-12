@@ -21,8 +21,9 @@ GC_OPTS="\
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+PrintGCTimeStamps \
--XX:+PrintCompilation -verbose:gc \
 -Xloggc:$WORK_DIRECTORY/coherence-gc.log"
+
+#-XX:+PrintCompilation -verbose:gc \
 
 JAVA_OPTS="-server -showversion $MEM_OPTS $GC_OPTS \
 -Dtangosol.coherence.cacheconfig=tangosol-java-client-config.xml \

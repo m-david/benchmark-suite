@@ -2,17 +2,17 @@
 
 PRG="$0"
 PRGDIR=`dirname "$PRG"`
-HAZELCAST_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
-WORK_DIRECTORY="$HAZELCAST_HOME/results"
+APP_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
+WORK_DIRECTORY="$APP_HOME/results"
 
 if [ ! -d "$WORK_DIRECTORY/logs" ]; then
   mkdir -p "$WORK_DIRECTORY/logs"
 fi
 
 CLASS_PATH="\
-$HAZELCAST_HOME/conf:\
-$HAZELCAST_HOME/jmh-lib/benchmark.ignite-1.0-SNAPSHOT-jmh.jar:\
-$HAZELCAST_HOME/lib/*"
+$APP_HOME/conf:\
+$APP_HOME/jmh-lib/benchmark.ignite-1.0-SNAPSHOT-jmh.jar:\
+$APP_HOME/lib/*"
 
 MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="\
@@ -30,7 +30,6 @@ fi
 
 JAVA_OPTS="-server -showversion \
 -Dbenchmark.ignite.discovery.addresses=127.0.0.1:47500..47509 \
--Dbenchmark.ignite.cache-xml-file=$HAZELCAST_HOME/conf/ignite-cache-local-client.xml \
 -DIGNITE_QUIET=false \
 $GC_OPTS"
 

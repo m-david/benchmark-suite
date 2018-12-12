@@ -32,7 +32,7 @@ JAVA_OPTS="-server -showversion \
     -Dgemfire.statistic-sampling-enabled=true \
     -DLOCATOR_HOST=localhost \
     -DLOCATOR_PORT=10680 \
-    -Dlog4j.configurationFile="$APP_HOME/conf/log4j2.xml" $MEM_OPTS $GC_OPTS"
+    -Dlog4j.configurationFile=$APP_HOME/conf/log4j2.xml $MEM_OPTS $GC_OPTS"
 
 JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/geode.json -o $APP_HOME/results/geode.txt -jvmArgsAppend -ea"
 

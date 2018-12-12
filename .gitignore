@@ -1,8 +1,10 @@
 
+logs/*
 **/core/build/*
 **/hazelcast/build/*
 **/coherence/build/*
 **/ignite/build/*
+**/ignite/out/*
 **/geode/build/*
 .idea/
 .gradle

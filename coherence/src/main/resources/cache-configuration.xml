@@ -8,7 +8,7 @@
             <scheme-name>BENCHMARK-Partitioned</scheme-name>
         </cache-mapping>
         <cache-mapping>
-            <cache-name>RiskTradeMap-offheap</cache-name>
+            <cache-name>RiskTradeMapOffheap</cache-name>
             <scheme-name>BENCHMARK-Partitioned</scheme-name>
         </cache-mapping>
     </caching-scheme-mapping>

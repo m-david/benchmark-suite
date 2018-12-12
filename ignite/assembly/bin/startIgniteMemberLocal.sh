@@ -9,11 +9,11 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-
 MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/ignite-gc.log"
 JAVA_OPTS="-server -showversion \
 -Dbenchmark.ignite.config.xml=$APP_HOME/conf/ignite-cache-local.xml \
+-Dbenchmark.ignite.tcp.discovery.address=127.0.0.1:47500..47509 \
 $MEM_OPTS $GC_OPTS"
 
 CLASS_PATH="\

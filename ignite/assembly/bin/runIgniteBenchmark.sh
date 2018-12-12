@@ -29,7 +29,7 @@ if [ -z ${HZ_USE_ASYNC_MAP_STREAMER+x} ];
 fi
 
 JAVA_OPTS="-server -showversion \
--Dbenchmark.ignite.addresses=10.212.1.108:10800 \
+-Dbenchmark.ignite.addresses=10.212.1.117:10800 \
 -DIGNITE_QUIET=false \
 $GC_OPTS"
 

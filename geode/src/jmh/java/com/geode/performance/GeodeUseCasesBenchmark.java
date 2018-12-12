@@ -191,6 +191,16 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
+    public void b03a_ClearTradesSingleOffHeap() throws Exception
+    {
+        for (RiskTrade riskTrade : riskTradeList)
+        {
+            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
+        }
+        clearRegion(riskTradeOffHeapCache);
+    }
+
+    @Benchmark
     public void b04_GetAllRiskTradesSingle() throws Exception
     {
         fetchAllRecordsOneByOne(riskTradeReadCache, riskTradeReadCache.keySetOnServer());

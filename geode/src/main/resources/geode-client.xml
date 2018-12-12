@@ -12,7 +12,7 @@
     </pool>
 
     <region name="RiskTradeMap" refid="CACHING_PROXY"/>
-    <region name="RiskTradeMap-read" refid="CACHING_PROXY"/>
-    <region name="RiskTradeMap-offheap" refid="CACHING_PROXY"/>
+    <region name="RiskTradeMapRead" refid="CACHING_PROXY"/>
+    <region name="RiskTradeMapOffheap" refid="CACHING_PROXY"/>
 
 </client-cache>

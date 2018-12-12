@@ -1,5 +1,6 @@
 package com.ignite.performance.support;
 
+import com.ignite.poc.model.RiskTrade;
 import common.domain.*;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import static common.BenchmarkConstants.NUMBER_OF_TRADES_TO_PROCESS;
 public class DummyData
 {
 
-    public static List<RiskTrade> getMeDummyRiskTrades() {
+    public static List<com.ignite.poc.model.RiskTrade> getMeDummyRiskTrades() {
         List<RiskTrade> riskTrades = new ArrayList<RiskTrade>();
         for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++) {
             riskTrades.add(riskTrade(i, "book"));

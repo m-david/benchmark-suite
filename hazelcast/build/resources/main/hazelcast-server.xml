@@ -23,8 +23,8 @@
         <join>
             <multicast enabled="false"/>
             <tcp-ip enabled="true">
-                <interface>localhost:5710</interface>
-                <interface>localhost:5711</interface>
+                <interface>10.212.1.108:5710</interface>
+                <interface>10.212.1.110:5711</interface>
             </tcp-ip>
         </join>
         <interfaces>

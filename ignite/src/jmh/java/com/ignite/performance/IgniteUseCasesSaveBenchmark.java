@@ -1,87 +1,59 @@
 package com.ignite.performance;
 
-import com.ignite.poc.model.RiskTrade;
-import com.ignite.poc.query.RiskTradeBookScanQuery;
-import com.ignite.poc.query.RiskTradeSettleCurrencyScanQuery;
-import com.ignite.poc.query.RiskTradeThreeFieldScanQuery;
-import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
-import org.apache.ignite.Ignition;
-import org.apache.ignite.cache.query.*;
-import org.apache.ignite.configuration.IgniteConfiguration;
-import org.apache.ignite.spi.discovery.DiscoverySpi;
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
-import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
-import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.cache.Cache;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static com.ignite.benchmark.common.IgniteBenchmarkHelper.fetchAllRecordsOneByOne;
-import static com.ignite.performance.support.DummyData.getMeDummyRiskTrades;
-import static com.ignite.performance.support.DummyData.riskTrade;
-import static common.BenchmarkConstants.*;
-
-@State(Scope.Benchmark)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
-public class IgniteUseCasesBenchmark
+//@State(Scope.Benchmark)
+//@OutputTimeUnit(TimeUnit.MILLISECONDS)
+//@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+public class IgniteUseCasesSaveBenchmark
 {
-    private static Logger logger = LoggerFactory.getLogger(IgniteUseCasesBenchmark.class);
+    /**
+    private static Logger logger = LoggerFactory.getLogger(IgniteUseCasesSaveBenchmark.class);
 
-    private Ignite igniteClient;
+    private IgniteClient igniteClient;
 
-    private IgniteCache<Integer, RiskTrade> riskTradeCache;
+    private ClientCache<Integer, RiskTrade> riskTradeCache;
 
-    private IgniteCache<Integer, RiskTrade> riskTradeReadCache;
+    private ClientCache<Integer, RiskTrade> riskTradeReadCache;
 
-    private IgniteCache<Integer, RiskTrade> riskTradeOffHeapCache;
-
-    private static final String ADDRESSES_PROPERTY_NAME = "benchmark.ignite.discovery.addresses";
-    private static final String ADDRESSES_DEFAULT = "127.0.0.1:47500..47509";
-
-    private static final String CLIENT_NAME = "BenchmarkClient-";
+    private ClientCache<Integer, RiskTrade> riskTradeOffHeapCache;
 
     // dummy data
     private List<RiskTrade> riskTradeList;
 
-    private IgniteConfiguration getConfiguration()
-    {
-        IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
-        igniteConfiguration.setIgniteInstanceName(CLIENT_NAME + Thread.currentThread().getName());
-        igniteConfiguration.setClientMode(true);
-        igniteConfiguration.setDiscoverySpi(getDiscoverySpi());
-        return igniteConfiguration;
-    }
-
-    private DiscoverySpi getDiscoverySpi()
-    {
-        String addressesString = System.getProperty(ADDRESSES_PROPERTY_NAME, ADDRESSES_DEFAULT);
-        TcpDiscoverySpi discoSpi = new TcpDiscoverySpi();
-        TcpDiscoveryVmIpFinder ipFinder = new TcpDiscoveryVmIpFinder();
-        ipFinder.setAddresses(Collections.singletonList(addressesString));
-        discoSpi.setIpFinder(ipFinder);
-        return discoSpi;
-    }
-
     @Setup
     public void before()
     {
-        this.igniteClient = Ignition.start(getConfiguration());
-        igniteClient.active(true);
-        this.riskTradeCache = igniteClient.cache(TRADE_MAP);
-        this.riskTradeReadCache = igniteClient.cache(TRADE_READ_MAP);
-        this.riskTradeOffHeapCache = igniteClient.cache(TRADE_OFFHEAP_MAP);
+        final String addressesString = System.getProperty("benchmark.ignite.addresses", "127.0.0.1:10800");
+        IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setAddresses(addressesString);
 
-        this.riskTradeList = getMeDummyRiskTrades();
+        this.igniteClient = Ignition.startClient(clientConfiguration);
+
+//        TcpDiscoverySpi discoSpi = new TcpDiscoverySpi();
+//
+//        TcpDiscoveryVmIpFinder ipFinder = new TcpDiscoveryVmIpFinder();
+//
+//        // "127.0.0.1:47500..47509"
+//        ipFinder.setAddresses(Collections.singletonList(addressesString));
+//
+//        discoSpi.setIpFinder(ipFinder);
+//
+//        igniteConfiguration.setDiscoverySpi(discoSpi);
+//
+//        Ignition.setClientMode(true);
+//        this.igniteClient = Ignition.start(igniteConfiguration);
+
+
+        this.riskTradeCache = igniteClient.getOrCreateCache(BenchmarkConstants.TRADE_MAP);
+        this.riskTradeReadCache = igniteClient.getOrCreateCache(BenchmarkConstants.TRADE_READ_MAP);
+
+
+        riskTradeList = getMeDummyRiskTrades();
+
         populateMap(riskTradeReadCache, riskTradeList);
+
+        this.riskTradeOffHeapCache = igniteClient.getOrCreateCache(BenchmarkConstants.TRADE_OFFHEAP_MAP);
+
     }
 
     @TearDown(Level.Iteration)
@@ -104,7 +76,7 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    private void persistAllRiskTradesIntoCacheInOneGo(IgniteCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
+    private void persistAllRiskTradesIntoCacheInOneGo(ClientCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
 
@@ -123,7 +95,7 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    private void populateMap(IgniteCache<Integer, RiskTrade> workCache, List<RiskTrade> riskTradeList)
+    private void populateMap(ClientCache<Integer, RiskTrade> workCache, List<RiskTrade> riskTradeList)
     {
         for (RiskTrade riskTrade : riskTradeList)
         {
@@ -131,27 +103,27 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    private Set<Integer> getAllKeys(IgniteCache<Integer, RiskTrade> cache)
+    private Set<Integer> getAllKeys(ClientCache<Integer, RiskTrade> cache)
     {
         Set<Integer> keys = new HashSet<>();
         cache.query(new ScanQuery<>(null)).forEach(entry -> keys.add((Integer) entry.getKey()));
         return keys;
     }
 
-    @Benchmark
+//    @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
         riskTradeList.forEach(trade -> riskTradeCache.put(trade.getId(), trade));
     }
 
-    @Benchmark
+//    @Benchmark
     public void b02_InsertTradesBulk() throws Exception
     {
         int batchSize = 500;
         persistAllRiskTradesIntoCacheInOneGo(riskTradeCache, riskTradeList, batchSize);
     }
 
-    @Benchmark
+//    @Benchmark
     public void b03_InsertTradesSingleOffHeap() throws Exception {
 
         for (RiskTrade riskTrade : riskTradeList) {
@@ -159,7 +131,7 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    @Benchmark
+//    @Benchmark
     public void b03a_ClearTradesSingleOffHeap() throws Exception
     {
         for (RiskTrade riskTrade : riskTradeList)
@@ -169,14 +141,14 @@ public class IgniteUseCasesBenchmark
         riskTradeOffHeapCache.clear();
     }
 
-    @Benchmark
+//    @Benchmark
     public void b04_GetAllRiskTradesSingle() throws Exception
     {
         fetchAllRecordsOneByOne(riskTradeReadCache, getAllKeys(riskTradeReadCache));
     }
 
 
-    @Benchmark
+//    @Benchmark
     public void b05_GetRiskTradeOneFilter() throws Exception
     {
 
@@ -190,7 +162,7 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    @Benchmark
+//    @Benchmark
     public void b06_GetRiskTradeThreeFilter() throws Exception
     {
         try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor =
@@ -219,25 +191,25 @@ public class IgniteUseCasesBenchmark
 
         try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = riskTradeReadCache.query(sql.setArgs("book")))
         {
-//            cursor.forEach(e -> System.out.println(e.getKey()) );
-            cursor.forEach(e -> riskTradeReadCache.get(e.getKey()) );
+            cursor.forEach(e -> System.out.println(e.getKey()) );
+//            cursor.forEach(e -> riskTradeReadCache.get(e.getKey()) );
         }
 
     }
 
-    @Benchmark
+//    @Benchmark
     public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
     {
         // Creating a continuous query.
         ContinuousQuery<Integer, String> qry = new ContinuousQuery<>();
-
-        Query scanQuery = new ScanQuery<>(new RiskTradeBookScanQuery("HongkongBook"));
+        SqlQuery sql = new SqlQuery(RiskTrade.class, "book = '?';");
+        sql.setArgs("HongkongBook");
 
         // Setting an optional initial query.
-        qry.setInitialQuery(scanQuery);
+        qry.setInitialQuery(sql);
         // Local listener that is called locally when an update notification is received.
         qry.setLocalListener((evts) ->
-                evts.forEach(e -> logger.info("key=" + e.getKey() + ", val=" + e.getValue())));
+                evts.forEach(e -> System.out.println("key=" + e.getKey() + ", val=" + e.getValue())));
 
         RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
         RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
@@ -254,7 +226,7 @@ public class IgniteUseCasesBenchmark
     public static void main(String[] args) throws RunnerException
     {
         Options opt = new OptionsBuilder()
-                .include(IgniteUseCasesBenchmark.class.getSimpleName())
+                .include(IgniteUseCasesSaveBenchmark.class.getSimpleName())
                 .warmupIterations(2)
                 .measurementIterations(2)
                 .forks(0)
@@ -266,5 +238,5 @@ public class IgniteUseCasesBenchmark
     }
 
 
-
+**/
 }

@@ -13,9 +13,9 @@
 
     <region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>
 
-    <region name="RiskTradeMap-read" refid="PARTITION_REDUNDANT"/>
+    <region name="RiskTradeMapRead" refid="PARTITION_REDUNDANT"/>
 
-    <region name="RiskTradeMap-offheap">
+    <region name="RiskTradeMapOffheap">
         <region-attributes refid="PARTITION_REDUNDANT" off-heap="true"/>
         <!--<region-attributes refid="PARTITION_REDUNDANT" />-->
     </region>

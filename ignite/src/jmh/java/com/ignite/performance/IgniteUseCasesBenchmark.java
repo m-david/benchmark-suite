@@ -38,7 +38,7 @@ public class IgniteUseCasesBenchmark
 
     private Ignite igniteClient;
 
-    private IgniteCache<Integer, RiskTrade> riskTradeCache;
+//    private IgniteCache<Integer, RiskTrade> riskTradeCache;
 
     private IgniteCache<Integer, RiskTrade> riskTradeReadCache;
 
@@ -86,7 +86,7 @@ public class IgniteUseCasesBenchmark
     {
         this.igniteClient = Ignition.start(getConfiguration());
         igniteClient.active(true);
-        this.riskTradeCache = igniteClient.cache(TRADE_MAP);
+//        this.riskTradeCache = igniteClient.cache(TRADE_MAP);
         this.riskTradeReadCache = igniteClient.cache(TRADE_READ_MAP);
         this.riskTradeOffHeapCache = igniteClient.cache(TRADE_OFFHEAP_MAP);
 
@@ -97,7 +97,7 @@ public class IgniteUseCasesBenchmark
     @TearDown(Level.Iteration)
     public void afterEach()
     {
-        riskTradeCache.clear();
+//        riskTradeCache.clear();
         riskTradeOffHeapCache.clear();
     }
 
@@ -151,14 +151,14 @@ public class IgniteUseCasesBenchmark
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
-        riskTradeList.forEach(trade -> riskTradeCache.put(trade.getId(), trade));
+        riskTradeList.forEach(trade -> riskTradeOffHeapCache.put(trade.getId(), trade));
     }
 
     @Benchmark
     public void b02_InsertTradesBulk() throws Exception
     {
         int batchSize = 500;
-        persistAllRiskTradesIntoCacheInOneGo(riskTradeCache, riskTradeList, batchSize);
+        persistAllRiskTradesIntoCacheInOneGo(riskTradeOffHeapCache, riskTradeList, batchSize);
     }
 
     @Benchmark

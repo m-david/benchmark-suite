@@ -4,7 +4,7 @@
 
     <caching-scheme-mapping>
         <cache-mapping>
-            <cache-name>RiskTradeMap*</cache-name>
+            <cache-name>RiskTradeMapRead</cache-name>
             <scheme-name>BENCHMARK-Partitioned</scheme-name>
         </cache-mapping>
         <cache-mapping>
@@ -32,8 +32,8 @@
                 <partitioned>true</partitioned>
                 <external-scheme>
                     <nio-memory-manager>
-                        <initial-size>1MB</initial-size>
-                        <maximum-size>100MB</maximum-size>
+                        <initial-size>256MB</initial-size>
+                        <maximum-size>256MB</maximum-size>
                     </nio-memory-manager>
                     <high-units>8192</high-units>
                     <unit-calculator>BINARY</unit-calculator>

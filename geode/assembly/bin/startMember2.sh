@@ -7,7 +7,7 @@ APP_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 CLASS_PATH="$APP_HOME/benchmark.geode-1.0-SNAPSHOT.jar:$APP_HOME/conf:$APP_HOME/lib/*:$GEMFIRE_HOME/lib/*:"
 
 gfsh start server \
-    --dir=$APP_HOME/server2 --locators=10.212.1.107[10680] \
+    --dir=$APP_HOME/server2 --locators=10.212.1.116[10680] \
     --classpath=$CLASS_PATH \
     --properties-file=$APP_HOME/conf/geode-server.properties \
     --cache-xml-file=$APP_HOME/conf/geode-server.xml \

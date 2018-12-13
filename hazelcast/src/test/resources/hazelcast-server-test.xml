@@ -13,44 +13,40 @@
         <password>benchmark-pass</password>
     </group>
 
-    <!-- Enable Management Center if needed -->
-    <management-center enabled="true">http://localhost:8080/hazelcast-mancenter</management-center>
     <network>
-        <port auto-increment="true" >5710</port>
+        <port auto-increment="true" >5720</port>
         <outbound-ports>
             <ports>0</ports>
         </outbound-ports>
         <join>
             <multicast enabled="false"/>
             <tcp-ip enabled="true">
-                <interface>10.212.1.117:5710</interface>
-                <interface>10.212.1.118:5710</interface>
+                <interface>localhost:5720</interface>
+                <interface>localhost:5721</interface>
             </tcp-ip>
         </join>
         <interfaces>
-            <interface>localhost:5710</interface>
+            <interface>localhost:5720</interface>
         </interfaces>
     </network>
     <!--<map name="RiskTradeMap">-->
         <!--<async-backup-count>0</async-backup-count>-->
         <!--<backup-count>1</backup-count>-->
     <!--</map>-->
+
     <map name="RiskTradeMapRead">
         <async-backup-count>0</async-backup-count>
         <backup-count>1</backup-count>
+        <indexes>
+            <index ordered="false">book</index>
+        </indexes>
     </map>
 
     <cache name="RiskTradeMapOffheap">
-        <in-memory-format>NATIVE</in-memory-format>
+        <in-memory-format>BINARY</in-memory-format>
         <async-backup-count>0</async-backup-count>
         <backup-count>0</backup-count>
-        <eviction max-size-policy="USED_NATIVE_MEMORY_PERCENTAGE" size="80"/>
     </cache>
-
-    <native-memory allocator-type="POOLED" enabled="true">
-        <size unit="MEGABYTES" value="512" />
-        <metadata-space-percentage>25</metadata-space-percentage>
-    </native-memory>
 
     <serialization>
         <portable-factories>

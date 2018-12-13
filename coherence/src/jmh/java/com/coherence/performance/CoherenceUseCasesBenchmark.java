@@ -1,6 +1,5 @@
 package com.coherence.performance;
 
-import common.domain.RiskTrade;
 import com.tangosol.net.CacheFactory;
 import com.tangosol.net.NamedCache;
 import com.tangosol.net.cache.ContinuousQueryCache;
@@ -9,6 +8,7 @@ import com.tangosol.util.ValueExtractor;
 import com.tangosol.util.extractor.PofExtractor;
 import com.tangosol.util.filter.AllFilter;
 import com.tangosol.util.filter.EqualsFilter;
+import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
 import static com.coherence.common.CoherenceBenchmarkHelper.riskTrade;
-import static common.BenchmarkConstants.TRADE_MAP;
 import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
 import static common.BenchmarkConstants.TRADE_READ_MAP;
 
@@ -36,7 +35,7 @@ public class CoherenceUseCasesBenchmark {
 
     private static Logger logger = LoggerFactory.getLogger(CoherenceUseCasesBenchmark.class);
 
-    private NamedCache<Integer, RiskTrade> riskTradeCache;
+//    private NamedCache<Integer, RiskTrade> riskTradeCache;
     private NamedCache<Integer, RiskTrade> riskTradeReadCache;
     private NamedCache<Integer, RiskTrade> riskTradeOffHeapCache;
 
@@ -48,7 +47,7 @@ public class CoherenceUseCasesBenchmark {
 //        System.setProperty("tangosol.coherence.cacheconfig", "tangosol-java-client-config.xml");
 //        System.setProperty("tangosol.pof.config", "my-custom-pof-config.xml");
 
-        riskTradeCache = CacheFactory.getCache(TRADE_MAP);
+//        riskTradeCache = CacheFactory.getCache(TRADE_MAP);
         riskTradeReadCache = CacheFactory.getCache(TRADE_READ_MAP);
         riskTradeOffHeapCache = CacheFactory.getCache(TRADE_OFFHEAP_MAP);
 
@@ -60,7 +59,7 @@ public class CoherenceUseCasesBenchmark {
 
     @TearDown(Level.Iteration)
     public void afterEach() {
-        riskTradeCache.clear();
+//        riskTradeCache.clear();
         riskTradeOffHeapCache.clear();
     }
 
@@ -72,14 +71,14 @@ public class CoherenceUseCasesBenchmark {
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception {
 
-        putRiskTrades(riskTradeCache, riskTradeList);
+        putRiskTrades(riskTradeOffHeapCache, riskTradeList);
 
     } // 164 seconds for 100000
 
     @Benchmark
     public void b02_InsertTradesBulk() throws Exception {
 
-        putRiskTradesInBulk(riskTradeCache, riskTradeList);
+        putRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList);
 
     } // 3 seconds for 100000
 
@@ -160,7 +159,7 @@ public class CoherenceUseCasesBenchmark {
     public void b08_ContinuousQueryCacheWithBookFilter() {
         ValueExtractor bookExtractor = new PofExtractor(null, 11);
         Filter bookFilter = new EqualsFilter(bookExtractor, "HongkongBook");
-        riskTradeCache.addIndex(bookExtractor, false, null);
+//        riskTradeOffHeapCache.addIndex(bookExtractor, false, null);
 
         // insertRecordsInRiskTradeCache(riskTradeReadCache);
         ContinuousQueryCache onlyTradesBelongToHongKongBookCache =

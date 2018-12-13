@@ -11,9 +11,11 @@
 
     </cache-server>
 
-    <region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>
+    <!--<region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>-->
 
-    <region name="RiskTradeMapRead" refid="PARTITION_REDUNDANT"/>
+    <region name="RiskTradeMapRead" refid="PARTITION_REDUNDANT">
+        <index name="riskTradeMapRead_idx" from-clause="/RiskTradeMapRead" expression="book"/>
+    </region>
 
     <region name="RiskTradeMapOffheap">
         <region-attributes refid="PARTITION_REDUNDANT" off-heap="true"/>

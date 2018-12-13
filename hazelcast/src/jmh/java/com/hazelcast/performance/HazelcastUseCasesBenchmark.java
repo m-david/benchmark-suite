@@ -1,13 +1,12 @@
 package com.hazelcast.performance;
 
-import com.hazelcast.poc.domain.portable.RiskTrade;
 import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.client.cache.impl.HazelcastClientCachingProvider;
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.map.QueryCache;
 import com.hazelcast.map.listener.EntryAddedListener;
+import com.hazelcast.poc.domain.portable.RiskTrade;
 import com.hazelcast.query.EntryObject;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.PredicateBuilder;
@@ -22,7 +21,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.cache.Cache;
 import javax.cache.CacheManager;
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import static com.hazelcast.common.BenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.hazelcast.performance.support.DummyData.getMeDummyRiskTrades;
 import static com.hazelcast.performance.support.DummyData.riskTrade;
-import static common.BenchmarkConstants.TRADE_MAP;
 import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
 import static common.BenchmarkConstants.TRADE_READ_MAP;
 
@@ -58,7 +55,7 @@ public class HazelcastUseCasesBenchmark
     private CacheManager cacheManager;
 
     // for put benchmarks
-    private IMap<Integer, RiskTrade> riskTradeCache;
+//    private IMap<Integer, RiskTrade> riskTradeCache;
 
     // for read benchmarks
     private IMap<Integer, RiskTrade> riskTradeReadCache;
@@ -75,17 +72,12 @@ public class HazelcastUseCasesBenchmark
     {
         hazelcastClient = HazelcastClient.newHazelcastClient();
 
-        riskTradeCache = hazelcastClient.getMap(TRADE_MAP);
+//        riskTradeCache = hazelcastClient.getMap(TRADE_MAP);
         riskTradeReadCache = hazelcastClient.getMap(TRADE_READ_MAP);
         riskTradeOffHeapCache = hazelcastClient.getMap(TRADE_OFFHEAP_MAP);
         riskTradeList = getMeDummyRiskTrades();
 
         populateReadMap(riskTradeReadCache, riskTradeList);
-
-//        cacheManager =
-//            HazelcastClientCachingProvider.createCachingProvider(hazelcastClient).getCacheManager();
-//        riskTradeOffHeapCache = cacheManager.getCache(TRADE_OFFHEAP_MAP);
-//        riskTradeCache.clear();
 
     }
 
@@ -98,7 +90,7 @@ public class HazelcastUseCasesBenchmark
     @TearDown(Level.Iteration)
     public void afterEach()
     {
-        riskTradeCache.clear();
+//        riskTradeCache.clear();
         riskTradeOffHeapCache.clear();
     }
     //endregion
@@ -107,14 +99,15 @@ public class HazelcastUseCasesBenchmark
     public void b01_InsertTradesSingle() throws Exception
     {
         // puts objects into IMap one by one
-        putRiskTrades(riskTradeCache, riskTradeList, false);
+//        putRiskTrades(riskTradeCache, riskTradeList, false);
+        putRiskTrades(riskTradeOffHeapCache, riskTradeList, false);
     }
 
     @Benchmark
     public void b02_InsertTradesBulk() throws Exception
     {
 
-        putAllRiskTradesInBulk(riskTradeCache, riskTradeList);
+        putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList);
     }
 
     @Benchmark
@@ -200,14 +193,13 @@ public class HazelcastUseCasesBenchmark
         };
 
         QueryCache<Integer, RiskTrade> onlyTradesBelongToHongKongBookCache =
-                riskTradeReadCache.getQueryCache(TRADE_MAP + "cache", entryAddedListener, predicate, true);
-
+                riskTradeReadCache.getQueryCache(TRADE_OFFHEAP_MAP + "cache", entryAddedListener, predicate, true);
 
         RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
         RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
 
-        riskTradeCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
-        riskTradeCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
+        riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
+        riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
     }
 
 

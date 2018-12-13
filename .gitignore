@@ -3,6 +3,8 @@ logs/*
 **/core/build/*
 core/out/*
 **/hazelcast/build/*
+**/hazelcast/logs/*
+**/hazelcast/out/*
 **/coherence/build/*
 **/ignite/build/*
 **/ignite/out/*

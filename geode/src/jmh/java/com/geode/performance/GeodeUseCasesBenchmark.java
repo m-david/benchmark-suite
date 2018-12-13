@@ -1,15 +1,12 @@
 package com.geode.performance;
 
-import com.geode.domain.serializable.RiskTrade;
 import com.geode.benchmark.common.GeodeBenchmarkHelper;
 import com.geode.benchmark.event.RiskTradeCqListener;
-import com.geode.benchmark.function.CreateIndexFunction;
 import com.geode.benchmark.function.PartitionRegionClearFunction;
+import com.geode.domain.serializable.RiskTrade;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.query.*;
 import org.openjdk.jmh.annotations.*;
@@ -25,10 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.geode.benchmark.common.GeodeBenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.geode.performance.support.DummyData.getMeDummyRiskTrades;
 import static com.geode.performance.support.DummyData.riskTrade;
-import static com.geode.benchmark.common.GeodeBenchmarkHelper.fetchAllRecordsOneByOne;
-import static common.BenchmarkConstants.TRADE_MAP;
 import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
 import static common.BenchmarkConstants.TRADE_READ_MAP;
 
@@ -51,7 +47,7 @@ public class GeodeUseCasesBenchmark
     private ClientCache clientCache;
 
     // for put benchmarks
-    private Region<Integer, RiskTrade> riskTradeCache;
+//    private Region<Integer, RiskTrade> riskTradeCache;
 
     // for read benchmarks
     private Region<Integer, RiskTrade> riskTradeReadCache;
@@ -73,7 +69,7 @@ public class GeodeUseCasesBenchmark
 
         FunctionService.registerFunction(new PartitionRegionClearFunction());
 
-        riskTradeCache = clientCache.getRegion(TRADE_MAP);
+//        riskTradeCache = clientCache.getRegion(TRADE_MAP);
         riskTradeReadCache = clientCache.getRegion(TRADE_READ_MAP);
         riskTradeOffHeapCache = clientCache.getRegion(TRADE_OFFHEAP_MAP);
 
@@ -92,13 +88,13 @@ public class GeodeUseCasesBenchmark
     @TearDown(Level.Iteration)
     public void afterEach()
     {
-        clearRegion(riskTradeCache);
+//        clearRegion(riskTradeCache);
         clearRegion(riskTradeOffHeapCache);
     }
 
     private void clearRegion(Region<Integer, RiskTrade> region)
     {
-        if(riskTradeCache.size() < 1)
+        if(region.size() < 1)
         {
             logger.info("clearRegion ... nothing to do.");
             return;
@@ -170,16 +166,16 @@ public class GeodeUseCasesBenchmark
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
-        persistAllRiskTradesIntoCache(riskTradeCache, riskTradeList);
+        persistAllRiskTradesIntoCache(riskTradeOffHeapCache, riskTradeList);
 
-        assert riskTradeCache.keySetOnServer().size() == riskTradeList.size();
+        assert riskTradeOffHeapCache.keySetOnServer().size() == riskTradeList.size();
     }
 
     @Benchmark
     public void b02_InsertTradesBulk() throws Exception
     {
         int batchSize = 500;
-        persistAllRiskTradesIntoCacheInOneGo(riskTradeCache, riskTradeList, batchSize);
+        persistAllRiskTradesIntoCacheInOneGo(riskTradeOffHeapCache, riskTradeList, batchSize);
     }
 
     @Benchmark
@@ -235,13 +231,13 @@ public class GeodeUseCasesBenchmark
     @Benchmark
     public void b07_AddIndexOnBookInTradeCacheAndGetDataBookFilter() throws Exception
     {
-        Pool pool = PoolManager.find(POOL_NAME);
-        assert pool != null;
-
-        FunctionService.onServer(pool).setArguments(new Object[]
-                {
-                        riskTradeReadCache.getName() +".bookIndex", "book", riskTradeReadCache.getFullPath()
-                }).execute(CreateIndexFunction.ID);
+//        Pool pool = PoolManager.find(POOL_NAME);
+//        assert pool != null;
+//
+//        FunctionService.onServer(pool).setArguments(new Object[]
+//                {
+//                        riskTradeReadCache.getName() +".bookIndex", "book", riskTradeReadCache.getFullPath()
+//                }).execute(CreateIndexFunction.ID);
 
         Query query = clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + riskTradeReadCache.getFullPath() + " e where e.book = '$1'");
         SelectResults<Integer> results = (SelectResults) query.execute("book");

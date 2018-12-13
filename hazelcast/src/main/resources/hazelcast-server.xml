@@ -12,7 +12,7 @@
         <name>benchmark</name>
         <password>benchmark-pass</password>
     </group>
-    <license-key>HazelcastEnterprise#9999Nodes#9999Clients#HDMemory:99999999GB#w7yAkRj1IbHcBfVimEOuKr638599939999peZ319999z05999Wn149zGxG09</license-key>
+    <license-key>${HAZELCAST_LICENSE_KEY}</license-key>
     <!-- Enable Management Center if needed -->
     <management-center enabled="true">http://localhost:8080/hazelcast-mancenter</management-center>
     <network>
@@ -23,8 +23,8 @@
         <join>
             <multicast enabled="false"/>
             <tcp-ip enabled="true">
-                <interface>10.212.1.108:5710</interface>
-                <interface>10.212.1.110:5711</interface>
+                <interface>10.212.1.117:5710</interface>
+                <interface>10.212.1.118:5710</interface>
             </tcp-ip>
         </join>
         <interfaces>

@@ -1,6 +1,7 @@
 
 logs/*
 **/core/build/*
+./core/out/*
 **/hazelcast/build/*
 **/coherence/build/*
 **/ignite/build/*

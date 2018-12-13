@@ -45,7 +45,10 @@ public class IgniteUseCasesBenchmark
     private IgniteCache<Integer, RiskTrade> riskTradeOffHeapCache;
 
     private static final String ADDRESSES_PROPERTY_NAME = "benchmark.ignite.discovery.addresses";
-    private static final String ADDRESSES_DEFAULT = "127.0.0.1:47500..47509";
+    private static final String PORTS_PROPERTY_NAME = "benchmark.ignite.discovery.ports";
+
+    private static final String HOSTS_DEFAULT = "127.0.0.1"; // comma separated
+    private static final String PORTS_DEFAULT = "47500..47509";
 
     private static final String CLIENT_NAME = "BenchmarkClient-";
 
@@ -63,10 +66,17 @@ public class IgniteUseCasesBenchmark
 
     private DiscoverySpi getDiscoverySpi()
     {
-        String addressesString = System.getProperty(ADDRESSES_PROPERTY_NAME, ADDRESSES_DEFAULT);
+        String addressesString = System.getProperty(ADDRESSES_PROPERTY_NAME, HOSTS_DEFAULT);
+        String portsString = System.getProperty(PORTS_PROPERTY_NAME, PORTS_DEFAULT);
+        String[] addresses = addressesString.split(",");
+
         TcpDiscoverySpi discoSpi = new TcpDiscoverySpi();
         TcpDiscoveryVmIpFinder ipFinder = new TcpDiscoveryVmIpFinder();
-        ipFinder.setAddresses(Collections.singletonList(addressesString));
+        List<String> list = new ArrayList<>();
+        List<String> ultimateAddressList = new ArrayList<>();
+        Collections.addAll(list, addresses);
+        list.forEach(s -> ultimateAddressList.add(s + ":" + portsString));
+        ipFinder.setAddresses(ultimateAddressList);
         discoSpi.setIpFinder(ipFinder);
         return discoSpi;
     }

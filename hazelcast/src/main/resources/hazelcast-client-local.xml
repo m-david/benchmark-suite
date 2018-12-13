@@ -8,7 +8,7 @@
         <property name="hazelcast.phone.home.enabled">false</property>
         <property name="hazelcast.logging.type">slf4j</property>
     </properties>
-    <license-key>${HAZELCAST_LICENSE_KEY}</license-key>
+
     <group>
         <name>benchmark</name>
         <password>benchmark-pass</password>

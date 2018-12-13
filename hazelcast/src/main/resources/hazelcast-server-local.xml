@@ -12,7 +12,7 @@
         <name>benchmark</name>
         <password>benchmark-pass</password>
     </group>
-    <license-key>${HAZELCAST_LICENSE_KEY}</license-key>
+
     <!-- Enable Management Center if needed -->
     <management-center enabled="true">http://localhost:8080/hazelcast-mancenter</management-center>
     <network>

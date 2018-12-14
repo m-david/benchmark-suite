@@ -35,7 +35,8 @@ import static common.BenchmarkConstants.TRADE_READ_MAP;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+//@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+@BenchmarkMode({Mode.AverageTime})
 //@Timeout(time = 60, timeUnit = TimeUnit.SECONDS)
 public class GeodeUseCasesBenchmark
 {
@@ -59,7 +60,7 @@ public class GeodeUseCasesBenchmark
     private List<RiskTrade> riskTradeList;
 
 
-    //region FIXTURE
+    //region Setup and Tear down
     @Setup
     public void before()
     {
@@ -82,6 +83,7 @@ public class GeodeUseCasesBenchmark
     @TearDown(Level.Trial)
     public void afterAll()
     {
+        clearRegion(riskTradeReadCache);
         clientCache.close();
     }
 
@@ -91,6 +93,7 @@ public class GeodeUseCasesBenchmark
 //        clearRegion(riskTradeCache);
         clearRegion(riskTradeOffHeapCache);
     }
+    //endregion
 
     private void clearRegion(Region<Integer, RiskTrade> region)
     {
@@ -162,7 +165,7 @@ public class GeodeUseCasesBenchmark
             trades.clear();
         }
     }
-
+    //region FIXTURE
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
@@ -247,7 +250,7 @@ public class GeodeUseCasesBenchmark
         results.forEach(key -> riskTradeReadCache.get(key));
     }
 
-    @Benchmark
+//    @Benchmark
     public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException {
 
         // Create CqAttribute using CqAttributeFactory

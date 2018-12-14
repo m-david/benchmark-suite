@@ -31,7 +31,8 @@ import static common.BenchmarkConstants.*;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+//@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+@BenchmarkMode({Mode.AverageTime})
 public class IgniteUseCasesBenchmark
 {
     private static Logger logger = LoggerFactory.getLogger(IgniteUseCasesBenchmark.class);
@@ -81,6 +82,7 @@ public class IgniteUseCasesBenchmark
         return discoSpi;
     }
 
+    //region Setup and Tear down
     @Setup
     public void before()
     {
@@ -104,6 +106,7 @@ public class IgniteUseCasesBenchmark
     @TearDown(Level.Trial)
     public void afterAll()
     {
+        riskTradeReadCache.clear();
         try
         {
             igniteClient.close();
@@ -113,6 +116,7 @@ public class IgniteUseCasesBenchmark
             logger.error(e.getLocalizedMessage());
         }
     }
+    //endregion
 
     private void persistAllRiskTradesIntoCacheInOneGo(IgniteCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
     {
@@ -148,6 +152,7 @@ public class IgniteUseCasesBenchmark
         return keys;
     }
 
+    //region FIXTURE
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
@@ -215,16 +220,9 @@ public class IgniteUseCasesBenchmark
 
     }
 
-    private static final String IDX_BOOK = "risk_trade_book_idx";
-
     @Benchmark
     public void b07_AddIndexOnBookInTradeCacheAndGetDataBookFilter() throws Exception
     {
-
-//        SqlFieldsQuery query = new SqlFieldsQuery(
-//                "CREATE INDEX IF NOT EXISTS " + IDX_BOOK + " ON " + BenchmarkConstants.TRADE_READ_MAP + " (book);");
-//        riskTradeReadCache.query(query).getAll();
-
         SqlQuery sql = new SqlQuery(RiskTrade.class, "book = '?';");
 
         try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = riskTradeReadCache.query(sql.setArgs("book")))
@@ -235,7 +233,7 @@ public class IgniteUseCasesBenchmark
 
     }
 
-    @Benchmark
+//    @Benchmark
     public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
     {
         // Creating a continuous query.
@@ -259,6 +257,7 @@ public class IgniteUseCasesBenchmark
             riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
         }
     }
+    //endregion
 
     // local runner for tests
     public static void main(String[] args) throws RunnerException

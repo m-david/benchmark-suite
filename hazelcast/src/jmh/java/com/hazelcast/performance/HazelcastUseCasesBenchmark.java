@@ -44,7 +44,8 @@ import static common.BenchmarkConstants.TRADE_READ_MAP;
  */
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+//@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+@BenchmarkMode({Mode.AverageTime})
 //@Timeout(time = 60, timeUnit = TimeUnit.SECONDS)
 public class HazelcastUseCasesBenchmark
 {
@@ -66,7 +67,7 @@ public class HazelcastUseCasesBenchmark
     // dummy data
     private List<RiskTrade> riskTradeList;
 
-    //region FIXTURE
+    //region Setup and Tear down
     @Setup
     public void before()
     {
@@ -82,8 +83,9 @@ public class HazelcastUseCasesBenchmark
     }
 
     @TearDown(Level.Trial)
-    public void after()
+    public void afterAll()
     {
+        riskTradeReadCache.clear();
         hazelcastClient.shutdown();
     }
 
@@ -95,12 +97,13 @@ public class HazelcastUseCasesBenchmark
     }
     //endregion
 
+    //region FIXTURE
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
         // puts objects into IMap one by one
 //        putRiskTrades(riskTradeCache, riskTradeList, false);
-        putRiskTrades(riskTradeOffHeapCache, riskTradeList, false);
+        putRiskTrades(riskTradeOffHeapCache, riskTradeList, true);
     }
 
     @Benchmark
@@ -113,10 +116,7 @@ public class HazelcastUseCasesBenchmark
     @Benchmark
     public void b03_InsertTradesSingleOffHeap() throws Exception
     {
-        for (RiskTrade riskTrade : riskTradeList)
-        {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-        }
+        putRiskTrades(riskTradeOffHeapCache, riskTradeList, true);
     }
 
     @Benchmark
@@ -177,7 +177,7 @@ public class HazelcastUseCasesBenchmark
         }
     }
 
-    @Benchmark
+//    @Benchmark
     public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
     {
 
@@ -201,6 +201,7 @@ public class HazelcastUseCasesBenchmark
         riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
         riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
     }
+    //endregion
 
 
     private void populateReadMap(IMap<Integer, RiskTrade> riskTradeReadIMap, List<RiskTrade> riskTradeList)

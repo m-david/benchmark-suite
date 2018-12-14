@@ -30,7 +30,8 @@ import static common.BenchmarkConstants.TRADE_READ_MAP;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+//@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
+@BenchmarkMode({Mode.AverageTime})
 public class CoherenceUseCasesBenchmark {
 
     private static Logger logger = LoggerFactory.getLogger(CoherenceUseCasesBenchmark.class);
@@ -41,6 +42,7 @@ public class CoherenceUseCasesBenchmark {
 
     private List<RiskTrade> riskTradeList;
 
+    //region Setup and Tear down
     @Setup
     public void before() {
         //System.setProperty("tangosol.coherence.override", "tangosol-coherence-override.xml");
@@ -64,10 +66,14 @@ public class CoherenceUseCasesBenchmark {
     }
 
     @TearDown(Level.Trial)
-    public void afterAll() {
+    public void afterAll()
+    {
+        riskTradeReadCache.clear();
         CacheFactory.shutdown();
     }
+    //endregion
 
+    //region FIXTURE
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception {
 
@@ -155,7 +161,7 @@ public class CoherenceUseCasesBenchmark {
 
     } // 129 seconds for getting 100000 records
 
-    @Benchmark
+//    @Benchmark
     public void b08_ContinuousQueryCacheWithBookFilter() {
         ValueExtractor bookExtractor = new PofExtractor(null, 11);
         Filter bookFilter = new EqualsFilter(bookExtractor, "HongkongBook");
@@ -171,6 +177,7 @@ public class CoherenceUseCasesBenchmark {
         riskTradeReadCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
         riskTradeReadCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
     }
+    //endregion
 
     private void fetchAllRecordsOneByOne(NamedCache riskTradeCache) {
         final Set set = riskTradeCache.keySet();

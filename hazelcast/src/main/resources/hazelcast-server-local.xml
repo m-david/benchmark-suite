@@ -25,10 +25,11 @@
             <tcp-ip enabled="true">
                 <interface>localhost:5710</interface>
                 <interface>localhost:5711</interface>
+                <interface>localhost:5712</interface>
             </tcp-ip>
         </join>
         <interfaces>
-            <interface>localhost:5710</interface>
+            <interface>localhost:571?</interface>
         </interfaces>
     </network>
     <!--<map name="RiskTradeMap">-->

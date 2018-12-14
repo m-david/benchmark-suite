@@ -12,8 +12,6 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-mkdir -p results
-
 CLASS_PATH="$GEMFIRE/lib/*:$APP_HOME/jmh-lib/benchmark.geode-1.0-SNAPSHOT-jmh.jar:$APP_HOME/lib/*"
 
 MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"

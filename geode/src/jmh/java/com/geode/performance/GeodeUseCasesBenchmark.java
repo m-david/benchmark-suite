@@ -1,14 +1,11 @@
 package com.geode.performance;
 
-import com.geode.benchmark.common.GeodeBenchmarkHelper;
-import com.geode.benchmark.event.RiskTradeCqListener;
-import com.geode.benchmark.function.PartitionRegionClearFunction;
 import com.geode.domain.serializable.RiskTrade;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -21,12 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.geode.benchmark.common.GeodeBenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.geode.performance.support.DummyData.getMeDummyRiskTrades;
-import static com.geode.performance.support.DummyData.riskTrade;
-import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
-import static common.BenchmarkConstants.TRADE_READ_MAP;
+import static common.BenchmarkConstants.*;
 
 /**
  * @author mdavid
@@ -45,91 +41,46 @@ public class GeodeUseCasesBenchmark
 
     private static Logger logger = LoggerFactory.getLogger(GeodeUseCasesBenchmark.class);
 
-    private ClientCache clientCache;
-
-    // for put benchmarks
-//    private Region<Integer, RiskTrade> riskTradeCache;
-
-    // for read benchmarks
-    private Region<Integer, RiskTrade> riskTradeReadCache;
-
-    // for Offheap Region Benchmarks
-    private Region<Integer, RiskTrade> riskTradeOffHeapCache;
-
-    // dummy data
-    private List<RiskTrade> riskTradeList;
-
-
-    //region Setup and Tear down
-    @Setup
-    public void before()
+    @State(Scope.Thread)
+    public static class InitReadCacheState
     {
-        ClientCacheFactory ccf = connectStandalone("my-test");
-        ccf.setPoolSubscriptionEnabled(true);
-        clientCache = ccf.create();
+        public ClientCache clientCache;
+        public Region<Integer, RiskTrade> riskTradeReadCache;
+        public Region<Integer, RiskTrade> riskTradeOffHeapCache;
+        public List<RiskTrade> riskTradeList;
 
-        FunctionService.registerFunction(new PartitionRegionClearFunction());
-
-//        riskTradeCache = clientCache.getRegion(TRADE_MAP);
-        riskTradeReadCache = clientCache.getRegion(TRADE_READ_MAP);
-        riskTradeOffHeapCache = clientCache.getRegion(TRADE_OFFHEAP_MAP);
-
-        riskTradeList = getMeDummyRiskTrades();
-
-        persistAllRiskTradesIntoCache(riskTradeReadCache, riskTradeList);
-
-    }
-
-    @TearDown(Level.Trial)
-    public void afterAll()
-    {
-        clearRegion(riskTradeReadCache);
-        clientCache.close();
-    }
-
-    @TearDown(Level.Iteration)
-    public void afterEach()
-    {
-//        clearRegion(riskTradeCache);
-        clearRegion(riskTradeOffHeapCache);
-    }
-    //endregion
-
-    private void clearRegion(Region<Integer, RiskTrade> region)
-    {
-        if(region.size() < 1)
+        @Setup(Level.Trial)
+        public void doSetup()
         {
-            logger.info("clearRegion ... nothing to do.");
-            return;
+            ClientCacheFactory ccf = connectStandalone("my-test");
+            ccf.setPoolSubscriptionEnabled(true);
+            clientCache = ccf.create();
+            riskTradeReadCache = clientCache.getRegion(TRADE_READ_MAP);
+            riskTradeList = getMeDummyRiskTrades();
+            riskTradeOffHeapCache = clientCache.getRegion(TRADE_OFFHEAP_MAP);
+            persistAllRiskTradesIntoCache(riskTradeReadCache, riskTradeList);
         }
 
-        logger.info(">> before clear, riskTradeCache.size: " + region.keySetOnServer().size() + " fullPath: " + region.getFullPath());
-        GeodeBenchmarkHelper.removeBatch(region, region.keySetOnServer(), 1000);
-        logger.info(">> after clear, riskTradeCache.size: " + region.keySetOnServer().size());
+        @TearDown(Level.Trial)
+        public void afterAll()
+        {
+            clientCache.close();
+        }
+
+    }
+    private static ClientCacheFactory connectStandalone(String name)
+    {
+        return new ClientCacheFactory();
     }
 
-    private void persistAllRiskTradesIntoCache(Region<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList)
+
+    private static void persistAllRiskTradesIntoCache(Region<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList)
     {
-        if(riskTradeCache.keySetOnServer().size() == riskTradeList.size())
-        {
-            return;
-        }
         for (RiskTrade riskTrade : riskTradeList)
         {
             riskTradeCache.put(riskTrade.getId(), riskTrade);
         }
     }
-
-    private ClientCacheFactory connectStandalone(String name)
-    {
-        return new ClientCacheFactory()
-//                .set("log-file", "./logs/" + name + ".log")
-//                .set("statistic-archive-file", "./logs/" + name + ".gfs")
-//                .set("statistic-sampling-enabled", "true")
-//                .addPoolLocator("localhost", Integer.valueOf(System.getProperty("LOCATOR_PORT", "10680")))
-                ;
-    }
-
 
     // local runner for tests
     public static void main(String[] args) throws RunnerException
@@ -165,127 +116,79 @@ public class GeodeUseCasesBenchmark
             trades.clear();
         }
     }
+
     //region FIXTURE
     @Benchmark
-    public void b01_InsertTradesSingle() throws Exception
+    public void b01_InsertTradesSingle(InitReadCacheState state) throws Exception
     {
-        persistAllRiskTradesIntoCache(riskTradeOffHeapCache, riskTradeList);
+        persistAllRiskTradesIntoCache(state.riskTradeOffHeapCache, state.riskTradeList);
 
-        assert riskTradeOffHeapCache.keySetOnServer().size() == riskTradeList.size();
+        assert state.riskTradeOffHeapCache.keySetOnServer().size() == state.riskTradeList.size();
     }
 
     @Benchmark
-    public void b02_InsertTradesBulk() throws Exception
+    public void b02_InsertTradesBulk1000(InitReadCacheState state) throws Exception
     {
-        int batchSize = 500;
-        persistAllRiskTradesIntoCacheInOneGo(riskTradeOffHeapCache, riskTradeList, batchSize);
+        persistAllRiskTradesIntoCacheInOneGo(state.riskTradeOffHeapCache, state.riskTradeList, BATCH_SIZE);
+    }
+
+//    @Benchmark
+//    public void b03_ClearTradesSingle() throws Exception
+//    {
+//        riskTradeList.forEach(riskTrade -> riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade));
+//        clearRegion(riskTradeOffHeapCache);
+//    }
+
+    @Benchmark
+    public void b03_GetAllTradesSingle(InitReadCacheState state) throws Exception
+    {
+        fetchAllRecordsOneByOne(state.riskTradeReadCache, state.riskTradeReadCache.keySetOnServer());
     }
 
     @Benchmark
-    public void b03_InsertTradesSingleOffHeap() throws Exception {
-
-        for (RiskTrade riskTrade : riskTradeList) {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-        }
-    }
-
-    @Benchmark
-    public void b03a_ClearTradesSingleOffHeap() throws Exception
+    public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
     {
-        for (RiskTrade riskTrade : riskTradeList)
-        {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-        }
-        clearRegion(riskTradeOffHeapCache);
-    }
-
-    @Benchmark
-    public void b04_GetAllRiskTradesSingle() throws Exception
-    {
-        fetchAllRecordsOneByOne(riskTradeReadCache, riskTradeReadCache.keySetOnServer());
-    }
-
-    @Benchmark
-    public void b05_GetRiskTradeOneFilter() throws Exception
-    {
-        Query query = clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + riskTradeReadCache.getFullPath() +
+        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.settleCurrency = '$1'");
         SelectResults<Integer> results = (SelectResults) query.execute("USD");
-        results.forEach(key -> riskTradeReadCache.get(key));
+        results.forEach(key -> state.riskTradeReadCache.get(key));
     }
 
     @Benchmark
-    public void b06_GetRiskTradeThreeFilter() throws Exception
+    public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception
     {
-        String queryString = "select e.id from " + riskTradeReadCache.getFullPath() +
+        String queryString = "select e.id from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.traderName = '$1'" +
                 " and e.settleCurrency = '$2'" +
                 " and e.book = '$3'";
 
         logger.info(queryString);
-        Query query = clientCache.getQueryService(POOL_NAME).newQuery(queryString);
+        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery(queryString);
 
         SelectResults<Integer> results = (SelectResults) query.execute("traderName", "USD", "book");
         logger.info(query.getQueryString());
         logger.info("Results size: " + results.size());
-        results.forEach(key -> riskTradeReadCache.get(key));
+        results.forEach(key -> state.riskTradeReadCache.get(key));
     }
 
     @Benchmark
-    public void b07_AddIndexOnBookInTradeCacheAndGetDataBookFilter() throws Exception
+    public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception
     {
-//        Pool pool = PoolManager.find(POOL_NAME);
-//        assert pool != null;
-//
-//        FunctionService.onServer(pool).setArguments(new Object[]
-//                {
-//                        riskTradeReadCache.getName() +".bookIndex", "book", riskTradeReadCache.getFullPath()
-//                }).execute(CreateIndexFunction.ID);
 
-        Query query = clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + riskTradeReadCache.getFullPath() + " e where e.book = '$1'");
+        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + state.riskTradeReadCache.getFullPath() + " e where e.book = '$1'");
         SelectResults<Integer> results = (SelectResults) query.execute("book");
+
+//        int expectedCount = riskTradeList.size();
+        final AtomicInteger counter = new AtomicInteger(0);
 
         logger.info(query.getQueryString());
         logger.info("Results size: " + results.size());
-        results.forEach(key -> riskTradeReadCache.get(key));
-    }
-
-//    @Benchmark
-    public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException {
-
-        // Create CqAttribute using CqAttributeFactory
-        CqAttributesFactory cqf = new CqAttributesFactory();
-
-        // Create a listener and add it to the CQ attributes callback defined below
-        CqListener tradeEventListener = new RiskTradeCqListener();
-        cqf.addCqListener(tradeEventListener);
-        CqAttributes cqa = cqf.create();
-        // Name of the CQ and its query
-        String cqName = "riskTradeTracker";
-        String queryString = "select * from " + riskTradeOffHeapCache.getFullPath() + " t where t.book = 'HongkongBook'";
-
-        CqQuery cqQuery = null;
-        try
-        {
-            cqQuery = clientCache.getQueryService(POOL_NAME).getCq(cqName);
-            if(cqQuery == null)
-            {
-                cqQuery = clientCache.getQueryService().newCq(cqName, queryString, cqa);
-            }
-        } catch (CqExistsException e)
-        {
-            e.printStackTrace();
-        } catch (CqException e)
-        {
-            e.printStackTrace();
-            return;
-        }
-
-        RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
-        RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
-
-        riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
-        riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
+        results.forEach(key ->
+                {
+                    state.riskTradeReadCache.get(key);
+                    counter.incrementAndGet();
+                });
+        assert (counter.get() > 0);
     }
 
 

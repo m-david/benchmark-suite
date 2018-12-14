@@ -1,11 +1,8 @@
 package com.hazelcast.performance;
 
 import com.hazelcast.client.HazelcastClient;
-import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.map.QueryCache;
-import com.hazelcast.map.listener.EntryAddedListener;
 import com.hazelcast.poc.domain.portable.RiskTrade;
 import com.hazelcast.query.EntryObject;
 import com.hazelcast.query.Predicate;
@@ -28,12 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.hazelcast.common.BenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.hazelcast.performance.support.DummyData.getMeDummyRiskTrades;
-import static com.hazelcast.performance.support.DummyData.riskTrade;
-import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
-import static common.BenchmarkConstants.TRADE_READ_MAP;
+import static common.BenchmarkConstants.*;
 
 /**
  * TODO
@@ -85,7 +81,7 @@ public class HazelcastUseCasesBenchmark
     @TearDown(Level.Trial)
     public void afterAll()
     {
-        riskTradeReadCache.clear();
+//        riskTradeReadCache.clear();
         hazelcastClient.shutdown();
     }
 
@@ -93,7 +89,7 @@ public class HazelcastUseCasesBenchmark
     public void afterEach()
     {
 //        riskTradeCache.clear();
-        riskTradeOffHeapCache.clear();
+//        riskTradeOffHeapCache.clear();
     }
     //endregion
 
@@ -107,49 +103,37 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    public void b02_InsertTradesBulk() throws Exception
+    public void b02_InsertTradesBulk1000() throws Exception
     {
 
-        putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList);
+        putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, BATCH_SIZE);
     }
 
-    @Benchmark
-    public void b03_InsertTradesSingleOffHeap() throws Exception
-    {
-        putRiskTrades(riskTradeOffHeapCache, riskTradeList, true);
-    }
+//    @Benchmark
+//    public void b03_ClearTradesSingle() throws Exception
+//    {
+//        riskTradeList.forEach(riskTrade -> riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade));
+//        riskTradeOffHeapCache.clear();
+//    }
 
     @Benchmark
-    public void b03a_ClearTradesSingleOffHeap() throws Exception
-    {
-        for (RiskTrade riskTrade : riskTradeList)
-        {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-        }
-        riskTradeOffHeapCache.clear();
-    }
-
-    @Benchmark
-    public void b04_GetAllRiskTradesSingle() throws Exception
+    public void b03_GetAllTradesSingle() throws Exception
     {
         fetchAllRecordsOneByOne(riskTradeReadCache, riskTradeReadCache.keySet());
     }
 
     @Benchmark
-    public void b05_GetRiskTradeOneFilter() throws Exception
+    public void b04_GetTradeOneFilter() throws Exception
     {
         EntryObject e = new PredicateBuilder().getEntryObject();
         Predicate predicate = e.get("settleCurrency").equal("USD");
 
         Set<Integer> allRiskTradesWhereCurrencyIsUsd = riskTradeReadCache.keySet(predicate);
-        for (Integer key : allRiskTradesWhereCurrencyIsUsd)
-        {
-            RiskTrade riskTrade = riskTradeReadCache.get(key);
-        }
+        allRiskTradesWhereCurrencyIsUsd.forEach(key -> riskTradeReadCache.get(key));
     }
 
     @Benchmark
-    public void b06_GetRiskTradeThreeFilter() throws Exception
+    public void b05_GetTradeThreeFilter() throws Exception
     {
         final EntryObject e = new PredicateBuilder().getEntryObject();
         final Predicate allFilters = Predicates.and(
@@ -158,49 +142,54 @@ public class HazelcastUseCasesBenchmark
                 e.get("book").equal("book")
         );
         Set<Integer> result = riskTradeReadCache.keySet(allFilters);
-        for (Integer key : result)
-        {
-            RiskTrade riskTrade = riskTradeReadCache.get(key);
-        }
+        result.forEach(key -> riskTradeReadCache.get(key));
     }
 
     @Benchmark
-    public void b07_AddIndexOnBookInTradeCacheAndGetDataBookFilter() throws Exception
+    public void b06_GetTradeBookFilterHasIndex() throws Exception
     {
         riskTradeReadCache.addIndex("book", false);
         Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal("book");
 
+        final AtomicInteger counter = new AtomicInteger(0);
+
+
         Set<Integer> result = riskTradeReadCache.keySet(predicate);
-        for (Integer key : result)
-        {
-            RiskTrade riskTrade = riskTradeReadCache.get(key);
-        }
+        result.forEach(key ->
+            {
+                riskTradeReadCache.get(key);
+                counter.incrementAndGet();
+            }
+        );
+
+        assert (counter.get() > 0);
+
     }
 
 //    @Benchmark
-    public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
-    {
-
-        Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal("HongkongBook");
-
-        EntryAddedListener entryAddedListener = new EntryAddedListener()
-        {
-            @Override
-            public void entryAdded(EntryEvent entryEvent)
-            {
-                logger.debug("CQC listener value: " + entryEvent.getValue());
-            }
-        };
-
-        QueryCache<Integer, RiskTrade> onlyTradesBelongToHongKongBookCache =
-                riskTradeReadCache.getQueryCache(TRADE_OFFHEAP_MAP + "cache", entryAddedListener, predicate, true);
-
-        RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
-        RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
-
-        riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
-        riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
-    }
+//    public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
+//    {
+//
+//        Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal("HongkongBook");
+//
+//        EntryAddedListener entryAddedListener = new EntryAddedListener()
+//        {
+//            @Override
+//            public void entryAdded(EntryEvent entryEvent)
+//            {
+//                logger.debug("CQC listener value: " + entryEvent.getValue());
+//            }
+//        };
+//
+//        QueryCache<Integer, RiskTrade> onlyTradesBelongToHongKongBookCache =
+//                riskTradeReadCache.getQueryCache(TRADE_OFFHEAP_MAP + "cache", entryAddedListener, predicate, true);
+//
+//        RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
+//        RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
+//
+//        riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
+//        riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
+//    }
     //endregion
 
 
@@ -226,14 +215,23 @@ public class HazelcastUseCasesBenchmark
         }
     }
 
-    private void putAllRiskTradesInBulk(Map<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList)
+    private void putAllRiskTradesInBulk(Map<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
+
         for (RiskTrade riskTrade : riskTradeList)
         {
-            trades.put(riskTrade.getId(), riskTrade);
+            for(int i = 0; i < batchSize; i++) {
+                trades.put(riskTrade.getId(), riskTrade);
+            }
+            riskTradeCache.putAll(trades);
+            trades.clear();
         }
-        riskTradeCache.putAll(trades);
+        if(trades.size() > 0)
+        {
+            riskTradeCache.putAll(trades);
+            trades.clear();
+        }
     }
 
     private void putRiskTrades(IMap<Integer, RiskTrade> riskTradeCache,

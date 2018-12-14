@@ -12,4 +12,6 @@ public class BenchmarkConstants {
 //    public static final String TRADE_MAP = "RiskTradeMap";
     public static final String TRADE_READ_MAP = "RiskTradeMapRead";
     public static final String TRADE_OFFHEAP_MAP = "RiskTradeMapOffheap";
+
+    public static final int BATCH_SIZE = 1000;
 }

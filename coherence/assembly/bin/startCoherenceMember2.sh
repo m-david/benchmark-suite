@@ -14,7 +14,7 @@ $APP_HOME/conf:\
 $APP_HOME/benchmark.coherence-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*
 
-MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"
+MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/coherence-gc.log"
 JAVA_OPTS="\
 -server -Djava.net.preferIPv4Stack=true -showversion \

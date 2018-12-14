@@ -4,10 +4,11 @@ import com.ignite.poc.model.RiskTrade;
 import com.ignite.poc.query.RiskTradeBookScanQuery;
 import com.ignite.poc.query.RiskTradeSettleCurrencyScanQuery;
 import com.ignite.poc.query.RiskTradeThreeFieldScanQuery;
-import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.query.*;
+import org.apache.ignite.client.ClientCache;
+import org.apache.ignite.client.IgniteClient;
+import org.apache.ignite.configuration.ClientConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.DiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import javax.cache.Cache;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.ignite.benchmark.common.IgniteBenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.ignite.performance.support.DummyData.getMeDummyRiskTrades;
@@ -37,13 +39,13 @@ public class IgniteUseCasesBenchmark
 {
     private static Logger logger = LoggerFactory.getLogger(IgniteUseCasesBenchmark.class);
 
-    private Ignite igniteClient;
+    private IgniteClient igniteClient;
 
 //    private IgniteCache<Integer, RiskTrade> riskTradeCache;
 
-    private IgniteCache<Integer, RiskTrade> riskTradeReadCache;
+    private ClientCache<Integer, RiskTrade> riskTradeReadCache;
 
-    private IgniteCache<Integer, RiskTrade> riskTradeOffHeapCache;
+    private ClientCache<Integer, RiskTrade> riskTradeOffHeapCache;
 
     private static final String ADDRESSES_PROPERTY_NAME = "benchmark.ignite.discovery.addresses";
     private static final String PORTS_PROPERTY_NAME = "benchmark.ignite.discovery.ports";
@@ -86,8 +88,15 @@ public class IgniteUseCasesBenchmark
     @Setup
     public void before()
     {
-        this.igniteClient = Ignition.start(getConfiguration());
-        igniteClient.active(true);
+//        this.igniteClient = Ignition.start(getConfiguration());
+//        igniteClient.active(true);
+
+        String addressesString = System.getProperty("benchmark.ignite.addresses", "127.0.0.1:10800");
+        ClientConfiguration cfg = new ClientConfiguration().setAddresses(addressesString);
+
+        this.igniteClient = Ignition.startClient(cfg);
+
+
 //        this.riskTradeCache = igniteClient.cache(TRADE_MAP);
         this.riskTradeReadCache = igniteClient.cache(TRADE_READ_MAP);
         this.riskTradeOffHeapCache = igniteClient.cache(TRADE_OFFHEAP_MAP);
@@ -100,13 +109,13 @@ public class IgniteUseCasesBenchmark
     public void afterEach()
     {
 //        riskTradeCache.clear();
-        riskTradeOffHeapCache.clear();
+//        riskTradeOffHeapCache.clear();
     }
 
     @TearDown(Level.Trial)
     public void afterAll()
     {
-        riskTradeReadCache.clear();
+//        riskTradeReadCache.clear();
         try
         {
             igniteClient.close();
@@ -118,7 +127,7 @@ public class IgniteUseCasesBenchmark
     }
     //endregion
 
-    private void persistAllRiskTradesIntoCacheInOneGo(IgniteCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
+    private void persistAllRiskTradesIntoCacheInOneGo(ClientCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
 
@@ -137,7 +146,7 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    private void populateMap(IgniteCache<Integer, RiskTrade> workCache, List<RiskTrade> riskTradeList)
+    private void populateMap(ClientCache<Integer, RiskTrade> workCache, List<RiskTrade> riskTradeList)
     {
         for (RiskTrade riskTrade : riskTradeList)
         {
@@ -145,7 +154,7 @@ public class IgniteUseCasesBenchmark
         }
     }
 
-    private Set<Integer> getAllKeys(IgniteCache<Integer, RiskTrade> cache)
+    private Set<Integer> getAllKeys(ClientCache<Integer, RiskTrade> cache)
     {
         Set<Integer> keys = new HashSet<>();
         cache.query(new ScanQuery<>(null)).forEach(entry -> keys.add((Integer) entry.getKey()));
@@ -160,39 +169,30 @@ public class IgniteUseCasesBenchmark
     }
 
     @Benchmark
-    public void b02_InsertTradesBulk() throws Exception
+    public void b02_InsertTradesBulk1000() throws Exception
     {
-        int batchSize = 500;
-        persistAllRiskTradesIntoCacheInOneGo(riskTradeOffHeapCache, riskTradeList, batchSize);
+        persistAllRiskTradesIntoCacheInOneGo(riskTradeOffHeapCache, riskTradeList, BATCH_SIZE);
     }
 
-    @Benchmark
-    public void b03_InsertTradesSingleOffHeap() throws Exception {
-
-        for (RiskTrade riskTrade : riskTradeList) {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-        }
-    }
-
-    @Benchmark
-    public void b03a_ClearTradesSingleOffHeap() throws Exception
-    {
-        for (RiskTrade riskTrade : riskTradeList)
-        {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-        }
-        riskTradeOffHeapCache.clear();
-    }
+//    @Benchmark
+//    public void b03_ClearTrades() throws Exception
+//    {
+//        for (RiskTrade riskTrade : riskTradeList)
+//        {
+//            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
+//        }
+//        riskTradeOffHeapCache.clear();
+//    }
 
     @Benchmark
-    public void b04_GetAllRiskTradesSingle() throws Exception
+    public void b03_GetAllTradesSingle() throws Exception
     {
         fetchAllRecordsOneByOne(riskTradeReadCache, getAllKeys(riskTradeReadCache));
     }
 
 
     @Benchmark
-    public void b05_GetRiskTradeOneFilter() throws Exception
+    public void b04_GetTradeSettleCurrencyFilter() throws Exception
     {
 
         try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor =
@@ -206,7 +206,7 @@ public class IgniteUseCasesBenchmark
     }
 
     @Benchmark
-    public void b06_GetRiskTradeThreeFilter() throws Exception
+    public void b05_GetTradeThreeFilter() throws Exception
     {
         try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor =
                      riskTradeReadCache.query(
@@ -221,42 +221,52 @@ public class IgniteUseCasesBenchmark
     }
 
     @Benchmark
-    public void b07_AddIndexOnBookInTradeCacheAndGetDataBookFilter() throws Exception
+    public void b06_GetTradeBookFilterHasIndex() throws Exception
     {
-        SqlQuery sql = new SqlQuery(RiskTrade.class, "book = '?';");
+//        SqlQuery sql = new SqlQuery(RiskTrade.class, "book = '?';");
 
-        try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = riskTradeReadCache.query(sql.setArgs("book")))
+        final AtomicInteger counter = new AtomicInteger(0);
+
+        RiskTradeBookScanQuery query = new RiskTradeBookScanQuery("book");
+
+        try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = riskTradeReadCache.query(new ScanQuery<>(query)))
         {
-//            cursor.forEach(e -> System.out.println(e.getKey()) );
-            cursor.forEach(e -> riskTradeReadCache.get(e.getKey()) );
+            cursor.forEach(e ->
+                    {
+                        riskTradeReadCache.get(e.getKey());
+                        counter.incrementAndGet();
+                    }
+                );
         }
+
+        assert (counter.get() > 0);
 
     }
 
 //    @Benchmark
-    public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
-    {
-        // Creating a continuous query.
-        ContinuousQuery<Integer, String> qry = new ContinuousQuery<>();
-
-        Query scanQuery = new ScanQuery<>(new RiskTradeBookScanQuery("HongkongBook"));
-
-        // Setting an optional initial query.
-        qry.setInitialQuery(scanQuery);
-        // Local listener that is called locally when an update notification is received.
-        qry.setLocalListener((evts) ->
-                evts.forEach(e -> logger.info("key=" + e.getKey() + ", val=" + e.getValue())));
-
-        RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
-        RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
-
-        // Executing the query.
-        try (QueryCursor<Cache.Entry<Integer, String>> cur = riskTradeOffHeapCache.query(qry))
-        {
-            riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
-            riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
-        }
-    }
+//    public void b08_ContinuousQueryCacheWithBookFilter() throws InterruptedException
+//    {
+//        // Creating a continuous query.
+//        ContinuousQuery<Integer, String> qry = new ContinuousQuery<>();
+//
+//        Query scanQuery = new ScanQuery<>(new RiskTradeBookScanQuery("HongkongBook"));
+//
+//        // Setting an optional initial query.
+//        qry.setInitialQuery(scanQuery);
+//        // Local listener that is called locally when an update notification is received.
+//        qry.setLocalListener((evts) ->
+//                evts.forEach(e -> logger.info("key=" + e.getKey() + ", val=" + e.getValue())));
+//
+//        RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
+//        RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
+//
+//        // Executing the query.
+//        try (QueryCursor<Cache.Entry<Integer, String>> cur = riskTradeOffHeapCache.query(qry))
+//        {
+//            riskTradeOffHeapCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
+//            riskTradeOffHeapCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
+//        }
+//    }
     //endregion
 
     // local runner for tests

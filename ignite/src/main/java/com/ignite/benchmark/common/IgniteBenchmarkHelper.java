@@ -1,7 +1,7 @@
 package com.ignite.benchmark.common;
 
 import com.ignite.poc.model.RiskTrade;
-import org.apache.ignite.IgniteCache;
+import org.apache.ignite.client.ClientCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,7 @@ public class IgniteBenchmarkHelper
 {
     private static Logger logger = LoggerFactory.getLogger(IgniteBenchmarkHelper.class);
 
-    public static void fetchAllRecordsOneByOne(IgniteCache<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
+    public static void fetchAllRecordsOneByOne(ClientCache<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
         long started = System.nanoTime();
         final Set<Integer> set = keys;
         for (Integer key : set) {

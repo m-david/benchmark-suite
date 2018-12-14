@@ -1,4 +1,10 @@
 # benchmark-suite
 Benchmarking IMDG vendors
 
-### Build
+# Building the Application
+
+To build and package the application, run:
+
+```bash
+gradle -Dorg.gradle.daemon=false 
+```

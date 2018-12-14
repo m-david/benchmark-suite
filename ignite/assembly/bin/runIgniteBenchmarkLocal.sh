@@ -5,6 +5,9 @@ PRGDIR=`dirname "$PRG"`
 APP_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 WORK_DIRECTORY="$APP_HOME/results"
 
+APP_PID=$RANDOM
+TODAY=`date +%Y-%m-%d.%H-%M-%S`
+
 if [ ! -d "$WORK_DIRECTORY/logs" ]; then
   mkdir -p "$WORK_DIRECTORY/logs"
 fi
@@ -20,7 +23,7 @@ GC_OPTS="\
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+PrintGCTimeStamps \
--Xloggc:$WORK_DIRECTORY/logs/ignite-gc.log"
+-Xloggc:$WORK_DIRECTORY/logs/ignite-gc.$TODAY.$APP_PID.log"
 
 # -XX:+PrintCompilation -verbose:gc \
 
@@ -34,7 +37,7 @@ JAVA_OPTS="-server -showversion \
 -DIGNITE_QUIET=false \
 $GC_OPTS"
 
-JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $WORK_DIRECTORY/ignite.json -o $WORK_DIRECTORY/ignite.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.json -o $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH org.openjdk.jmh.Main IgniteUseCasesBenchmark $JMH_OPTS"
 echo $COMMAND_LINE

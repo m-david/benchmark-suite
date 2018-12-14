@@ -12,6 +12,7 @@ gfsh start server \
     --properties-file=$APP_HOME/conf/geode-server.properties \
     --cache-xml-file=$APP_HOME/conf/geode-server.xml \
     --server-port=40405 \
+    --bind-address=10.212.1.117 \
     --name=server1 \
     --initial-heap=512M \
     --max-heap=512M \

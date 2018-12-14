@@ -5,6 +5,9 @@ PRGDIR=`dirname "$PRG"`
 HAZELCAST_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 WORK_DIRECTORY="$HAZELCAST_HOME/results"
 
+APP_PID=$RANDOM
+TODAY=`date +%Y-%m-%d.%H-%M-%S`
+
 if [ ! -d "$WORK_DIRECTORY/logs" ]; then
   mkdir -p "$WORK_DIRECTORY/logs"
 fi
@@ -20,7 +23,7 @@ GC_OPTS="\
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+PrintGCTimeStamps \
--Xloggc:$WORK_DIRECTORY/logs/hazelcast-gc.log"
+-Xloggc:$WORK_DIRECTORY/logs/hazelcast-gc.$TODAY.$APP_PID.log"
 
 #-XX:+PrintCompilation -verbose:gc \
 
@@ -34,7 +37,7 @@ JAVA_OPTS="-server -showversion \
 -Dbenchmark.useAsyncMapStreamer=$HZ_USE_ASYNC_MAP_STREAMER $MEM_OPTS \
 $GC_OPTS"
 
-JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $WORK_DIRECTORY/hazelcast.json -o $WORK_DIRECTORY/hazelcast.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $WORK_DIRECTORY/hazelcast.$TODAY.$APP_PID.json -o $WORK_DIRECTORY/hazelcast.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH org.openjdk.jmh.Main HazelcastUseCasesBenchmark $JMH_OPTS"
 echo $COMMAND_LINE

@@ -5,6 +5,9 @@ PRGDIR=`dirname "$PRG"`
 APP_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 WORK_DIRECTORY="$APP_HOME/results/logs"
 
+APP_PID=$RANDOM
+TODAY=`date +%Y-%m-%d.%H-%M-%S`
+
 if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
@@ -21,7 +24,7 @@ GC_OPTS="\
 -XX:+PrintGCDetails \
 -XX:+PrintGCDateStamps \
 -XX:+PrintGCTimeStamps \
--Xloggc:$WORK_DIRECTORY/coherence-gc.log"
+-Xloggc:$WORK_DIRECTORY/coherence-gc.$TODAY.$APP_PID.log"
 
 #-XX:+PrintCompilation -verbose:gc \
 
@@ -29,7 +32,7 @@ JAVA_OPTS="-server -showversion $MEM_OPTS $GC_OPTS \
 -Dtangosol.coherence.cacheconfig=tangosol-java-client-config.xml \
 -Dtangosol.pof.config=my-custom-pof-config.xml"
 
-JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/coherence.json -o $APP_HOME/results/coherence.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/coherence.$TODAY.$APP_PID.json -o $APP_HOME/results/coherence.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 JAVA_OPTS="$JAVA_OPTS $1 $2"
 

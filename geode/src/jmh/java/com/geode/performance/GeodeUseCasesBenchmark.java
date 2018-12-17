@@ -4,6 +4,8 @@ import com.geode.domain.serializable.RiskTrade;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
 import org.openjdk.jmh.annotations.*;
@@ -132,13 +134,6 @@ public class GeodeUseCasesBenchmark
         persistAllRiskTradesIntoCacheInOneGo(state.riskTradeOffHeapCache, state.riskTradeList, BATCH_SIZE);
     }
 
-//    @Benchmark
-//    public void b03_ClearTradesSingle() throws Exception
-//    {
-//        riskTradeList.forEach(riskTrade -> riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade));
-//        clearRegion(riskTradeOffHeapCache);
-//    }
-
     @Benchmark
     public void b03_GetAllTradesSingle(InitReadCacheState state) throws Exception
     {
@@ -158,31 +153,50 @@ public class GeodeUseCasesBenchmark
     public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception
     {
         String queryString = "select e.id from " + state.riskTradeReadCache.getFullPath() +
-                " e where e.traderName = '$1'" +
-                " and e.settleCurrency = '$2'" +
-                " and e.book = '$3'";
+                " e where e.traderName = 'traderName'" +
+                " and e.settleCurrency = 'USD'" +
+                " and e.book = 'book'";
 
-        logger.info(queryString);
-        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery(queryString);
+//        logger.info(queryString);
 
-        SelectResults<Integer> results = (SelectResults) query.execute("traderName", "USD", "book");
-        logger.info(query.getQueryString());
-        logger.info("Results size: " + results.size());
+        Pool pool = PoolManager.find(POOL_NAME);
+        Query query = pool.getQueryService().newQuery(queryString);
+
+        SelectResults<Integer> results = (SelectResults) query.execute();//("traderName", "USD", "book");
+//        logger.info(query.getQueryString());
+//        logger.info("Results size: " + results.size());
+
+//        System.out.println("**************");
+//        System.out.println(queryString);
+//        System.out.println("**************");
+//        System.out.println("Results size: " + results.size());
+
         results.forEach(key -> state.riskTradeReadCache.get(key));
     }
 
     @Benchmark
     public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception
     {
+        String queryString =
+                "select e.id from " +
+                    state.riskTradeReadCache.getFullPath() +
+                " e where e.book = 'book'";
 
-        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + state.riskTradeReadCache.getFullPath() + " e where e.book = '$1'");
-        SelectResults<Integer> results = (SelectResults) query.execute("book");
+        Pool pool = PoolManager.find(POOL_NAME);
+        Query query = pool.getQueryService().newQuery(queryString);
+        SelectResults<Integer> results = (SelectResults) query.execute();//("book");
+
+//        System.out.println("**************");
+//        System.out.println(query.getQueryString());
+//        System.out.println("Results size: " + results.size());
+//        System.out.println("**************");
 
 //        int expectedCount = riskTradeList.size();
         final AtomicInteger counter = new AtomicInteger(0);
 
-        logger.info(query.getQueryString());
-        logger.info("Results size: " + results.size());
+//        logger.info(query.getQueryString());
+//        logger.info("Results size: " + results.size());
+
         results.forEach(key ->
                 {
                     state.riskTradeReadCache.get(key);

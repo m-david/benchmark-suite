@@ -2,7 +2,6 @@ package com.coherence.performance;
 
 import com.tangosol.net.CacheFactory;
 import com.tangosol.net.NamedCache;
-import com.tangosol.net.cache.ContinuousQueryCache;
 import com.tangosol.util.Filter;
 import com.tangosol.util.ValueExtractor;
 import com.tangosol.util.extractor.PofExtractor;
@@ -25,10 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
-import static com.coherence.common.CoherenceBenchmarkHelper.riskTrade;
-import static common.BenchmarkConstants.BATCH_SIZE;
-import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
-import static common.BenchmarkConstants.TRADE_READ_MAP;
+import static common.BenchmarkConstants.*;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -38,88 +34,62 @@ public class CoherenceUseCasesBenchmark {
 
     private static Logger logger = LoggerFactory.getLogger(CoherenceUseCasesBenchmark.class);
 
-//    private NamedCache<Integer, RiskTrade> riskTradeCache;
-    private NamedCache<Integer, RiskTrade> riskTradeReadCache;
-    private NamedCache<Integer, RiskTrade> riskTradeOffHeapCache;
 
-    private List<RiskTrade> riskTradeList;
-
-    //region Setup and Tear down
-    @Setup
-    public void before() {
-        //System.setProperty("tangosol.coherence.override", "tangosol-coherence-override.xml");
-//        System.setProperty("tangosol.coherence.cacheconfig", "tangosol-java-client-config.xml");
-//        System.setProperty("tangosol.pof.config", "my-custom-pof-config.xml");
-
-//        riskTradeCache = CacheFactory.getCache(TRADE_MAP);
-        riskTradeReadCache = CacheFactory.getCache(TRADE_READ_MAP);
-        riskTradeOffHeapCache = CacheFactory.getCache(TRADE_OFFHEAP_MAP);
-
-        riskTradeList = getMeDummyRiskTrades();
-
-        putRiskTrades(riskTradeReadCache, riskTradeList);
-
-    }
-
-    @TearDown(Level.Iteration)
-    public void afterEach() {
-//        riskTradeCache.clear();
-//        riskTradeOffHeapCache.clear();
-    }
-
-    @TearDown(Level.Trial)
-    public void afterAll()
+    @State(Scope.Thread)
+    public static class InitReadCacheState
     {
-//        riskTradeReadCache.clear();
-        CacheFactory.shutdown();
+        private NamedCache<Integer, RiskTrade> riskTradeReadCache;
+        private NamedCache<Integer, RiskTrade> riskTradeOffHeapCache;
+
+        private List<RiskTrade> riskTradeList;
+
+        @Setup(Level.Trial)
+        public void before()
+        {
+            riskTradeReadCache = CacheFactory.getCache(TRADE_READ_MAP);
+            riskTradeOffHeapCache = CacheFactory.getCache(TRADE_OFFHEAP_MAP);
+            riskTradeList = getMeDummyRiskTrades();
+            putRiskTrades(riskTradeReadCache, riskTradeList);
+        }
+
+        @TearDown(Level.Trial)
+        public void afterAll()
+        {
+            CacheFactory.shutdown();
+        }
     }
-    //endregion
 
     //region FIXTURE
     @Benchmark
-    public void b01_InsertTradesSingle() throws Exception {
+    public void b01_InsertTradesSingle(InitReadCacheState state) throws Exception {
 
-        putRiskTrades(riskTradeOffHeapCache, riskTradeList);
+        putRiskTrades(state.riskTradeOffHeapCache, state.riskTradeList);
 
     } // 164 seconds for 100000
 
     @Benchmark
-    public void b02_InsertTradesBulk1000() throws Exception
+    public void b02_InsertTradesBulk1000(InitReadCacheState state) throws Exception
     {
-        persistAllRiskTradesIntoCacheInOneGo(riskTradeOffHeapCache, riskTradeList, BATCH_SIZE);
+        persistAllRiskTradesIntoCacheInOneGo(state.riskTradeOffHeapCache, state.riskTradeList, BATCH_SIZE);
     }
 
-
-//    @Benchmark
-//    public void b03_ClearTrades() throws Exception
-//    {
-//        for (RiskTrade riskTrade : riskTradeList)
-//        {
-//            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-//        }
-//        riskTradeOffHeapCache.clear();
-//    }
-
-
     @Benchmark
-    public void b03_GetAllRiskTradesSingle() throws Exception {
+    public void b03_GetAllRiskTradesSingle(InitReadCacheState state) throws Exception {
 
-        fetchAllRecordsOneByOne(riskTradeReadCache);
+        fetchAllRecordsOneByOne(state.riskTradeReadCache);
     } // 131 seconds for 100000
 
     @Benchmark
-    public void b04_GetTradeOneFilter() throws Exception {
+    public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception {
         ValueExtractor valueExtractor = new PofExtractor(null, 10);
         Filter filter = new EqualsFilter(valueExtractor, "USD");
 
-        Set allRiskTradesWhereCurrencyIsUsd = riskTradeReadCache.keySet(filter);
-        for (Object key : allRiskTradesWhereCurrencyIsUsd) {
-            final Object o = riskTradeReadCache.get(key);
-        }
+        Set<Integer> allRiskTradesWhereCurrencyIsUsd = state.riskTradeReadCache.keySet(filter);
+        allRiskTradesWhereCurrencyIsUsd.forEach(key -> state.riskTradeReadCache.get(key));
     } // 66 seconds to apply filter and get 50,000 records out of 100000
 
     @Benchmark
-    public void b05_GetTradeThreeFilter() throws Exception {
+    public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception {
 
         ValueExtractor currencyExtractor = new PofExtractor(null, 10);
         Filter currencyFilter = new EqualsFilter(currencyExtractor, "USD");
@@ -133,28 +103,23 @@ public class CoherenceUseCasesBenchmark {
         Filter allFilters =
             new AllFilter(new Filter[] {currencyFilter, bookFilter, traderNameFilter});
 
-        Set result = riskTradeReadCache.keySet(allFilters);
-        for (Object key : result) {
-            final Object o = riskTradeReadCache.get(key);
-        }
+        Set<Integer> keys = state.riskTradeReadCache.keySet(allFilters);
+        keys.forEach(key -> state.riskTradeReadCache.get(key));
 
     }// 64 seconds to apply filter and get 50,000 records out of 100000
 
     @Benchmark
-    public void b06_GetTradeBookFilterHasIndex() throws Exception {
+    public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception {
         ValueExtractor bookExtractor = new PofExtractor(null, 11);
         Filter bookFilter = new EqualsFilter(bookExtractor, "book");
 
-//        riskTradeReadCache.addIndex(bookExtractor, false, null);
-
-//        int expectedCount = riskTradeList.size();
         final AtomicInteger counter = new AtomicInteger(0);
 
-        Set<Integer> result = riskTradeReadCache.keySet(bookFilter);
+        Set<Integer> result = state.riskTradeReadCache.keySet(bookFilter);
 
         result.forEach(key ->
                 {
-                    riskTradeReadCache.get(key);
+                    state.riskTradeReadCache.get(key);
                     counter.incrementAndGet();
                 });
         assert (counter.get() > 0);
@@ -163,24 +128,7 @@ public class CoherenceUseCasesBenchmark {
     } // 129 seconds for getting 100000 records
     //endregion
 
-//    @Benchmark
-//    public void b08_ContinuousQueryCacheWithBookFilter() {
-//        ValueExtractor bookExtractor = new PofExtractor(null, 11);
-//        Filter bookFilter = new EqualsFilter(bookExtractor, "HongkongBook");
-////        riskTradeOffHeapCache.addIndex(bookExtractor, false, null);
-//
-//        // insertRecordsInRiskTradeCache(riskTradeReadCache);
-//        ContinuousQueryCache onlyTradesBelongToHongKongBookCache =
-//            new ContinuousQueryCache(riskTradeReadCache, bookFilter);
-//
-//        RiskTrade newRiskTradeWithHongKongBook = riskTrade(80000, "HongkongBook");
-//        RiskTrade newRiskTradeWithSomeOtherBook = riskTrade(80001, "Book");
-//
-//        riskTradeReadCache.put(newRiskTradeWithHongKongBook.getId(), newRiskTradeWithHongKongBook);
-//        riskTradeReadCache.put(newRiskTradeWithSomeOtherBook.getId(), newRiskTradeWithSomeOtherBook);
-//    }
-
-    private void persistAllRiskTradesIntoCacheInOneGo(NamedCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
+    private static void persistAllRiskTradesIntoCacheInOneGo(NamedCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
 
@@ -200,25 +148,36 @@ public class CoherenceUseCasesBenchmark {
     }
 
 
-    private void fetchAllRecordsOneByOne(NamedCache riskTradeCache) {
+    private static void fetchAllRecordsOneByOne(NamedCache riskTradeCache) {
         final Set set = riskTradeCache.keySet();
         for (Object key : set) {
             final Object o1 = riskTradeCache.get(key);
         }
     }
 
-    private void putRiskTrades(NamedCache riskTradeCache, List<RiskTrade> riskTradeList) {
+    private static void putRiskTrades(NamedCache riskTradeCache, List<RiskTrade> riskTradeList) {
         for (RiskTrade riskTrade : riskTradeList) {
             riskTradeCache.put(riskTrade.getId(), riskTrade);
         }
     }
 
-    private void putRiskTradesInBulk(NamedCache riskTradeCache, List<RiskTrade> riskTradeList) {
+    private static void putRiskTradesInBulk(NamedCache riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
+    {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-        for (RiskTrade riskTrade : riskTradeList) {
-            trades.put(riskTrade.getId(), riskTrade);
+
+        for (RiskTrade riskTrade : riskTradeList)
+        {
+            for(int i = 0; i < batchSize; i++) {
+                trades.put(riskTrade.getId(), riskTrade);
+            }
+            riskTradeCache.putAll(trades);
+            trades.clear();
         }
-        riskTradeCache.putAll(trades);
+        if(trades.size() > 0)
+        {
+            riskTradeCache.putAll(trades);
+            trades.clear();
+        }
     }
 
     // local runner for tests

@@ -16,7 +16,6 @@ MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/ignite-gc.$TODAY.$APP_PID.log"
 JAVA_OPTS="-server -showversion \
 -Dbenchmark.ignite.config.xml=$APP_HOME/conf/ignite-cache.xml \
--Dbenchmark.ignite.tcp.discovery.address=10.212.1.117:47500..47509 \
 $MEM_OPTS $GC_OPTS"
 
 CLASS_PATH="\

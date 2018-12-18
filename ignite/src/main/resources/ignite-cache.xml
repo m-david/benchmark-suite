@@ -169,7 +169,7 @@
                 <property name="localPort" value="48500"/>
 
                 <!-- Changing local port range. This is an optional action. -->
-                <property name="localPortRange" value="20"/>
+                <property name="localPortRange" value="2"/>
 
                 <!-- Setting up IP finder for this cluster -->
                 <property name="ipFinder">
@@ -197,6 +197,14 @@
         <property name="communicationSpi">
             <bean class="org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi">
                 <property name="localPort" value="48100"/>
+            </bean>
+        </property>
+
+
+        <property name="clientConnectorConfiguration">
+            <bean class="org.apache.ignite.configuration.ClientConnectorConfiguration">
+                <property name="port" value="40100"/>
+                <property name="portRange" value="2"/>
             </bean>
         </property>
 

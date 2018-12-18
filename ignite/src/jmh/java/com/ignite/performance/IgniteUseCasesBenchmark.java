@@ -51,7 +51,7 @@ public class IgniteUseCasesBenchmark
         @Setup(Level.Trial)
         public void before()
         {
-            String addressesString = System.getProperty("benchmark.ignite.addresses", "127.0.0.1:10800");
+            String addressesString = System.getProperty("benchmark.ignite.addresses", "127.0.0.1:40100");
             ClientConfiguration cfg = new ClientConfiguration().setAddresses(addressesString);
             this.igniteClient = Ignition.startClient(cfg);
             this.riskTradeReadCache = igniteClient.cache(TRADE_READ_MAP);

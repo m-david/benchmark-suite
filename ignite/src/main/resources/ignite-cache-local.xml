@@ -165,24 +165,15 @@
 
         <property name="discoverySpi">
             <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
-                <!-- Initial local port to listen to. -->
                 <property name="localPort" value="48500"/>
-
-                <!-- Changing local port range. This is an optional action. -->
-                <property name="localPortRange" value="20"/>
-
-                <!-- Setting up IP finder for this cluster -->
+                <property name="localPortRange" value="2"/>
                 <property name="ipFinder">
-                    <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder">
+                    <bean
+                            class="org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder">
                         <property name="addresses">
                             <list>
-                                <!--
-                                Addresses and port range of nodes from
-                                the first cluster.
-                                127.0.0.1 can be replaced with actual IP addresses
-                                or host names. Port range is optional.
-                                -->
-                                <value>localhost:48500..48501</value>
+                                <!-- In distributed environment, replace with actual hosts IP addresses. -->
+                                <value>192.168.5.225:48500..48501</value>
                             </list>
                         </property>
                     </bean>
@@ -191,14 +182,22 @@
         </property>
 
         <!--
-        Explicitly configure TCP communication SPI changing local
-        port number for the nodes from the first cluster.
+            Explicitly configure TCP communication SPI changing local
+            port number for the nodes from the first cluster.
         -->
         <property name="communicationSpi">
             <bean class="org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi">
                 <property name="localPort" value="48100"/>
             </bean>
         </property>
+
+        <property name="clientConnectorConfiguration">
+            <bean class="org.apache.ignite.configuration.ClientConnectorConfiguration">
+                <property name="port" value="40100"/>
+                <property name="portRange" value="2"/>
+            </bean>
+        </property>
+
 
     </bean>
 </beans>

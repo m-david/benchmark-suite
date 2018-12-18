@@ -33,7 +33,7 @@ fi
 
 JAVA_OPTS="-server -showversion \
 -Dbenchmark.ignite.discovery.addresses=10.212.1.117 \
--Dbenchmark.ignite.discovery.ports=47500..47509 \
+-Dbenchmark.ignite.discovery.ports=48500..48501 \
 -DIGNITE_QUIET=false \
 $GC_OPTS"
 

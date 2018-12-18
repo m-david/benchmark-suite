@@ -144,9 +144,14 @@ public class GeodeUseCasesBenchmark
     public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
     {
         Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + state.riskTradeReadCache.getFullPath() +
-                " e where e.settleCurrency = '$1'");
-        SelectResults<Integer> results = (SelectResults) query.execute("USD");
-        results.forEach(key -> state.riskTradeReadCache.get(key));
+                " e where e.settleCurrency = 'USD'");
+        SelectResults<Integer> results = (SelectResults) query.execute();
+        RiskTrade trade;
+        results.forEach(key ->
+                {
+//                    System.out.println("trade id: " + state.riskTradeReadCache.get(key).getId());
+                    state.riskTradeReadCache.get(key);
+                });
     }
 
     @Benchmark
@@ -171,7 +176,11 @@ public class GeodeUseCasesBenchmark
 //        System.out.println("**************");
 //        System.out.println("Results size: " + results.size());
 
-        results.forEach(key -> state.riskTradeReadCache.get(key));
+        results.forEach(key ->
+                {
+//                    System.out.println("Trade id: " + state.riskTradeReadCache.get(key));
+                    state.riskTradeReadCache.get(key);
+                });
     }
 
     @Benchmark

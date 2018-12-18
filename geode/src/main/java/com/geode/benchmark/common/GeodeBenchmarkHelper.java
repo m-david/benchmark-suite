@@ -18,15 +18,28 @@ public class GeodeBenchmarkHelper
     private static Logger logger = LoggerFactory.getLogger(GeodeBenchmarkHelper.class);
 
     public static void fetchAllRecordsOneByOne(Map<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
-        long started = System.nanoTime();
+//        long started = System.nanoTime();
+        int count = 0;
         final Set<Integer> set = keys;
         for (Integer key : set) {
-            riskTradeCache.get(key);
+            RiskTrade trade = riskTradeCache.get(key);
+            ++count;
+//            System.out.println("**************");
+//            System.out.println("Trade id: " + trade.getId());
+//            System.out.println("**************");
         }
-        long elapsedNanos = System.nanoTime() - started;
 
-        logger.debug("Took {} seconds to get all {} RiskTrades from cache ", NANOSECONDS.toSeconds(elapsedNanos),
-                NUMBER_OF_TRADES_TO_PROCESS);
+//        System.out.println("**************");
+//        System.out.println("key size: " + keys.size() + " found size: " + count);
+//        System.out.println("**************");
+//        System.out.println("Results size: " + results.size());
+
+
+
+//        long elapsedNanos = System.nanoTime() - started;
+
+//        logger.debug("Took {} seconds to get all {} RiskTrades from cache ", NANOSECONDS.toSeconds(elapsedNanos),
+//                NUMBER_OF_TRADES_TO_PROCESS);
     }
 
     public static <K, V> void removeBatch(Region<K, V> region, Set<K> keys, int batchSize)

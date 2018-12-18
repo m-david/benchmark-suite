@@ -182,7 +182,7 @@
                                 127.0.0.1 can be replaced with actual IP addresses
                                 or host names. Port range is optional.
                                 -->
-                                <value>10.212.1.117:48500..48501</value>
+                                <value>localhost:48500..48501</value>
                             </list>
                         </property>
                     </bean>

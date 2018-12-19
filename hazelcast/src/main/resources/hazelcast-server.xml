@@ -31,13 +31,13 @@
             <interface>localhost:5710</interface>
         </interfaces>
     </network>
-    <!--<map name="RiskTradeMap">-->
-        <!--<async-backup-count>0</async-backup-count>-->
-        <!--<backup-count>1</backup-count>-->
-    <!--</map>-->
+
     <map name="RiskTradeMapRead">
         <async-backup-count>0</async-backup-count>
         <backup-count>1</backup-count>
+        <indexes>
+            <index ordered="false">book</index>
+        </indexes>
     </map>
 
     <cache name="RiskTradeMapOffheap">

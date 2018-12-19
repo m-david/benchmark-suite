@@ -32,10 +32,6 @@
             <interface>localhost:571?</interface>
         </interfaces>
     </network>
-    <!--<map name="RiskTradeMap">-->
-        <!--<async-backup-count>0</async-backup-count>-->
-        <!--<backup-count>1</backup-count>-->
-    <!--</map>-->
 
     <map name="RiskTradeMapRead">
         <async-backup-count>0</async-backup-count>

@@ -1,6 +1,7 @@
 package com.hazelcast.common;
 
 import com.hazelcast.poc.domain.portable.RiskTrade;
+import org.openjdk.jmh.infra.Blackhole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 public class BenchmarkHelper {
     private static Logger logger = LoggerFactory.getLogger(BenchmarkHelper.class);
 
-    public static void fetchAllRecordsOneByOne(Map<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
+    public static void fetchAllRecordsOneByOne(Blackhole blackhole, Map<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
         long started = System.nanoTime();
         final Set<Integer> set = keys;
         for (Integer key : set) {

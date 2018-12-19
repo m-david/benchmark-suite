@@ -9,6 +9,7 @@ import com.tangosol.util.filter.AllFilter;
 import com.tangosol.util.filter.EqualsFilter;
 import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,9 +29,9 @@ import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades
 import static common.BenchmarkConstants.*;
 
 @State(Scope.Benchmark)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 //@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
-@BenchmarkMode({Mode.AverageTime})
+@BenchmarkMode({Mode.SampleTime})
 public class CoherenceUseCasesBenchmark {
 
     private static Logger logger = LoggerFactory.getLogger(CoherenceUseCasesBenchmark.class);
@@ -42,6 +44,8 @@ public class CoherenceUseCasesBenchmark {
         private NamedCache<Integer, RiskTrade> riskTradeOffHeapCache;
 
         private List<RiskTrade> riskTradeList;
+
+        private ThreadLocalRandom randomizer = ThreadLocalRandom.current();
 
         @Setup(Level.Trial)
         public void before()
@@ -60,17 +64,22 @@ public class CoherenceUseCasesBenchmark {
     }
 
     //region FIXTURE
-    @Benchmark
-    public void b01_InsertTradesSingle(InitReadCacheState state) throws Exception {
-
-        putRiskTrades(state.riskTradeOffHeapCache, state.riskTradeList);
+    @Measurement(iterations = 100000)
+    @Warmup(iterations = 5)
+    public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        RiskTrade riskTrade = state.riskTradeList.get(state.randomizer.nextInt(state.riskTradeList.size()));
+        state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     } // 164 seconds for 100000
 
     @Benchmark
-    public void b02_InsertTradesBulk1000(InitReadCacheState state) throws Exception
+    @Measurement(iterations = 1000)
+    @Warmup(iterations = 5)
+    public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        persistAllRiskTradesIntoCacheInOneGo(state.riskTradeOffHeapCache, state.riskTradeList, BATCH_SIZE);
+        int startIndex = state.randomizer.nextInt(state.riskTradeList.size() - BATCH_SIZE);
+        putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
     @Benchmark
@@ -128,23 +137,15 @@ public class CoherenceUseCasesBenchmark {
     } // 129 seconds for getting 100000 records
     //endregion
 
-    private static void persistAllRiskTradesIntoCacheInOneGo(NamedCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
+    private static void putAllRiskTradesInBulk(Blackhole blackhole, NamedCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-
-        for (RiskTrade riskTrade : riskTradeList)
+        for(int i = startIndex; i < batchSize && i < riskTradeList.size(); i++)
         {
-            for(int i = 0; i < batchSize; i++) {
-                trades.put(riskTrade.getId(), riskTrade);
-            }
-            riskTradeCache.putAll(trades);
-            trades.clear();
+            RiskTrade riskTrade = riskTradeList.get(i);
+            trades.put(riskTrade.getId(), riskTrade);
         }
-        if(trades.size() > 0)
-        {
-            riskTradeCache.putAll(trades);
-            trades.clear();
-        }
+        riskTradeCache.putAll(trades);
     }
 
 

@@ -2,6 +2,7 @@ package com.geode.benchmark.common;
 
 import com.geode.domain.serializable.RiskTrade;
 import org.apache.geode.cache.Region;
+import org.openjdk.jmh.infra.Blackhole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class GeodeBenchmarkHelper
 {
     private static Logger logger = LoggerFactory.getLogger(GeodeBenchmarkHelper.class);
 
-    public static void fetchAllRecordsOneByOne(Map<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
+    public static void fetchAllRecordsOneByOne(Blackhole blackhole, Map<Integer, RiskTrade> riskTradeCache, Set<Integer> keys) {
 //        long started = System.nanoTime();
         int count = 0;
         final Set<Integer> set = keys;

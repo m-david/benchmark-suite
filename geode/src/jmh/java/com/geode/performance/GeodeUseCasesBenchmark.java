@@ -9,6 +9,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,9 +34,9 @@ import static common.BenchmarkConstants.*;
  */
 
 @State(Scope.Benchmark)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 //@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
-@BenchmarkMode({Mode.AverageTime})
+@BenchmarkMode({Mode.SampleTime})
 //@Timeout(time = 60, timeUnit = TimeUnit.SECONDS)
 public class GeodeUseCasesBenchmark
 {
@@ -50,6 +52,8 @@ public class GeodeUseCasesBenchmark
         public Region<Integer, RiskTrade> riskTradeReadCache;
         public Region<Integer, RiskTrade> riskTradeOffHeapCache;
         public List<RiskTrade> riskTradeList;
+
+        private ThreadLocalRandom randomizer = ThreadLocalRandom.current();
 
         @Setup(Level.Trial)
         public void doSetup()
@@ -100,48 +104,50 @@ public class GeodeUseCasesBenchmark
 
     }
 
-    private void persistAllRiskTradesIntoCacheInOneGo(Region<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int batchSize)
+    private void putAllRiskTradesInBulk(Blackhole blackhole, Region<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-
-        for (RiskTrade riskTrade : riskTradeList)
+        for(int i = startIndex; i < batchSize && i < riskTradeList.size(); i++)
         {
-            for(int i = 0; i < batchSize; i++) {
-                trades.put(riskTrade.getId(), riskTrade);
-            }
-            riskTradeCache.putAll(trades);
-            trades.clear();
+            RiskTrade riskTrade = riskTradeList.get(i);
+            trades.put(riskTrade.getId(), riskTrade);
         }
-        if(trades.size() > 0)
-        {
-            riskTradeCache.putAll(trades);
-            trades.clear();
-        }
+        riskTradeCache.putAll(trades);
     }
 
     //region FIXTURE
     @Benchmark
-    public void b01_InsertTradesSingle(InitReadCacheState state) throws Exception
+    @Measurement(iterations = 100000)
+    @Warmup(iterations = 5)
+    public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        persistAllRiskTradesIntoCache(state.riskTradeOffHeapCache, state.riskTradeList);
+        RiskTrade riskTrade = state.riskTradeList.get(state.randomizer.nextInt(state.riskTradeList.size()));
+        state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
-        assert state.riskTradeOffHeapCache.keySetOnServer().size() == state.riskTradeList.size();
     }
 
     @Benchmark
-    public void b02_InsertTradesBulk1000(InitReadCacheState state) throws Exception
+    @Measurement(iterations = 1000)
+    @Warmup(iterations = 5)
+    public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        persistAllRiskTradesIntoCacheInOneGo(state.riskTradeOffHeapCache, state.riskTradeList, BATCH_SIZE);
+        int startIndex = state.randomizer.nextInt(state.riskTradeList.size() - BATCH_SIZE);
+        putAllRiskTradesInBulk(
+                blackhole,
+                state.riskTradeOffHeapCache,
+                state.riskTradeList,
+                startIndex,
+                BATCH_SIZE);
     }
 
     @Benchmark
-    public void b03_GetAllTradesSingle(InitReadCacheState state) throws Exception
+    public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        fetchAllRecordsOneByOne(state.riskTradeReadCache, state.riskTradeReadCache.keySetOnServer());
+        fetchAllRecordsOneByOne(blackhole, state.riskTradeReadCache, state.riskTradeReadCache.keySetOnServer());
     }
 
     @Benchmark
-    public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
+    public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.settleCurrency = 'USD'");
@@ -155,7 +161,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception
+    public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         String queryString = "select e.id from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.traderName = 'traderName'" +
@@ -184,7 +190,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception
+    public void b06_GetTradeBookFilterHasIndex(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         String queryString =
                 "select e.id from " +

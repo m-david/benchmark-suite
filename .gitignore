@@ -2,6 +2,9 @@
 logs/*
 **/core/build/*
 core/out/*
+hazelcast/out/*
+geode/out/*
+coherence/out/*
 **/hazelcast/build/*
 **/hazelcast/logs/*
 **/hazelcast/out/*

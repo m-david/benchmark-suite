@@ -14,6 +14,7 @@ buildscript {
 
         classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
+//        compileJava 'org.projectlombok:lombok:1.16.20'
 
     }
 

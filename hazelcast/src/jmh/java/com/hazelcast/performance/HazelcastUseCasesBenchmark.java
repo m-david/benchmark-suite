@@ -20,15 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.hazelcast.common.BenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.hazelcast.performance.support.DummyData.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
 
@@ -86,70 +81,105 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000)
-    @Warmup(iterations = 5)
-    public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    @Measurement(iterations = ITERATIONS)
+    @Warmup(iterations = 2)
+    public void b01_InsertTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get(state.randomizer.nextInt(state.riskTradeList.size()));
+        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
         state.riskTradeOffHeapCache.set(riskTrade.getId(), riskTrade);
 
     }
 
     @Benchmark
-    @Measurement(iterations = 1000)
-    @Warmup(iterations = 5)
+    @Measurement(iterations = ITERATIONS)
+    @Warmup(iterations = 2)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = state.randomizer.nextInt(state.riskTradeList.size() - BATCH_SIZE);
+        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
     @Benchmark
-    public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    @Measurement(iterations = ITERATIONS)
+//    @Warmup(iterations = 5)
+    public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        fetchAllRecordsOneByOne(blackhole, state.riskTradeReadCache, state.riskTradeReadCache.keySet());
+        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
     @Benchmark
+    @Measurement(iterations = ITERATIONS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String trader = DUMMY_TRADER+id;
+        Predicate predicate = new PredicateBuilder().getEntryObject().get("traderName").equal(trader);
+
+        Collection<RiskTrade> foundTrades = state.riskTradeReadCache.values(predicate);
+        foundTrades.forEach(trade ->
+        {
+            assert (trade.getTraderName().equals(trader));
+        });
+
+        assert (foundTrades.size() > 0);
+    }
+
+    @Benchmark
+    @Measurement(iterations = ITERATIONS)
+    public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String trader = DUMMY_TRADER+id;
+        String currency = DUMMY_CURRENCY+id;
+        String book = DUMMY_BOOK+id;
+
         EntryObject e = new PredicateBuilder().getEntryObject();
-        Predicate predicate = e.get("settleCurrency").equal("USD");
+        Predicate allFilters = Predicates.and(
+                e.get("traderName").equal(trader),
+                e.get("settleCurrency").equal(currency),
+                e.get("book").equal(book)
+        );
+        Collection<RiskTrade> result = state.riskTradeReadCache.values(allFilters);
+        result.forEach(trade -> {
+            assert (
+                    trade.getTraderName().equals(trader) &&
+                    trade.getSettleCurrency().equals(currency) &&
+                    trade.getBook().equals(book)
+            );
+        });
 
-        Set<Integer> allRiskTradesWhereCurrencyIsUsd = state.riskTradeReadCache.keySet(predicate);
-        allRiskTradesWhereCurrencyIsUsd.forEach(key -> state.riskTradeReadCache.get(key));
+        assert(result.size() > 0);
+
     }
 
     @Benchmark
-    public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    @Measurement(iterations = ITERATIONS)
+    public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        final EntryObject e = new PredicateBuilder().getEntryObject();
-        final Predicate allFilters = Predicates.and(
-                e.get("traderName").equal("traderName"),
-                e.get("settleCurrency").equal("USD"),
-                e.get("book").equal("book")
-        );
-        Set<Integer> result = state.riskTradeReadCache.keySet(allFilters);
-        result.forEach(key -> state.riskTradeReadCache.get(key));
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String book = DUMMY_BOOK+id;
+        Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal(book);
+        Collection<RiskTrade> result = state.riskTradeReadCache.values(predicate);
+        result.forEach(trade -> {
+            assert (trade.getId() == id);
+        });
+
+        assert(result.size() > 0);
     }
 
     @Benchmark
-    public void b06_GetTradeBookFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    @Measurement(iterations = ITERATIONS)
+    public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal("book");
+        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
+        Collection<RiskTrade> result = state.riskTradeReadCache.values(Predicates.between("id", min, max));
+        result.forEach(trade -> {
+            assert (trade.getId() >= min && trade.getId() <= max);
+        });
 
-        final AtomicInteger counter = new AtomicInteger(0);
-
-        Set<Integer> result = state.riskTradeReadCache.keySet(predicate);
-        result.forEach(key ->
-            {
-                state.riskTradeReadCache.get(key);
-                counter.incrementAndGet();
-            }
-        );
-
-        assert (counter.get() > 0);
-
+        assert(result.size() > 0);
     }
 
     private static void populateReadMap(IMap<Integer, RiskTrade> riskTradeReadIMap, List<RiskTrade> riskTradeList)
@@ -176,22 +206,6 @@ public class HazelcastUseCasesBenchmark
         }
         riskTradeCache.putAll(trades);
     }
-
-    private static void putRiskTrades(IMap<Integer, RiskTrade> riskTradeCache,
-                               List<RiskTrade> riskTradeList, boolean useSet)
-    {
-        for (RiskTrade riskTrade : riskTradeList)
-        {
-            if (!useSet)
-            {
-                riskTradeCache.put(riskTrade.getId(), riskTrade);
-            } else
-            {
-                riskTradeCache.set(riskTrade.getId(), riskTrade);
-            }
-        }
-    }
-
 
     // local runner for tests
     public static void main(String[] args) throws RunnerException

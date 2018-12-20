@@ -126,7 +126,10 @@
                                           value="com.ignite.poc.model.RiskTrade"/>
                                 <property name="fields">
                                     <map>
+                                        <entry key="id" value="java.lang.Integer"/>
                                         <entry key="book" value="java.lang.String"/>
+                                        <entry key="traderName" value="java.lang.String"/>
+                                        <entry key="settleCurrency" value="java.lang.String"/>
                                     </map>
                                 </property>
                                 <property name="indexes">

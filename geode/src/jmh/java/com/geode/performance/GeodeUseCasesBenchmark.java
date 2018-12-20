@@ -117,21 +117,19 @@ public class GeodeUseCasesBenchmark
 
     //region FIXTURE
     @Benchmark
-    @Measurement(iterations = 100000)
-    @Warmup(iterations = 5)
+    @Measurement(iterations = ITERATIONS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get(state.randomizer.nextInt(state.riskTradeList.size()));
+        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     }
 
     @Benchmark
-    @Measurement(iterations = 1000)
-    @Warmup(iterations = 5)
+    @Measurement(iterations = ITERATIONS)
     public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = state.randomizer.nextInt(state.riskTradeList.size() - BATCH_SIZE);
+        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
         putAllRiskTradesInBulk(
                 blackhole,
                 state.riskTradeOffHeapCache,
@@ -141,83 +139,101 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
+    @Measurement(iterations = ITERATIONS)
     public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        fetchAllRecordsOneByOne(blackhole, state.riskTradeReadCache, state.riskTradeReadCache.keySetOnServer());
+        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
     @Benchmark
+    @Measurement(iterations = ITERATIONS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select e.id from " + state.riskTradeReadCache.getFullPath() +
-                " e where e.settleCurrency = 'USD'");
-        SelectResults<Integer> results = (SelectResults) query.execute();
-        RiskTrade trade;
-        results.forEach(key ->
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String currency = DUMMY_CURRENCY+id;
+
+        Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select * from " + state.riskTradeReadCache.getFullPath() +
+                " e where e.settleCurrency = $1");
+        SelectResults<RiskTrade> results = (SelectResults) query.execute(currency);
+
+        results.forEach(trade ->
                 {
-//                    System.out.println("trade id: " + state.riskTradeReadCache.get(key).getId());
-                    state.riskTradeReadCache.get(key);
+                    assert (trade.getSettleCurrency().equals(currency));
                 });
+        assert (results.size() > 0);
     }
 
     @Benchmark
+    @Measurement(iterations = ITERATIONS)
     public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        String queryString = "select e.id from " + state.riskTradeReadCache.getFullPath() +
-                " e where e.traderName = 'traderName'" +
-                " and e.settleCurrency = 'USD'" +
-                " and e.book = 'book'";
-
-//        logger.info(queryString);
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String queryString = "select * from " + state.riskTradeReadCache.getFullPath() +
+                " e where e.traderName = $1" +
+                " and e.settleCurrency = $2" +
+                " and e.book = $3";
 
         Pool pool = PoolManager.find(POOL_NAME);
         Query query = pool.getQueryService().newQuery(queryString);
 
-        SelectResults<Integer> results = (SelectResults) query.execute();//("traderName", "USD", "book");
-//        logger.info(query.getQueryString());
-//        logger.info("Results size: " + results.size());
+        String trader = DUMMY_TRADER+id;
+        String currency = DUMMY_CURRENCY+id;
+        String book = DUMMY_BOOK+id;
 
-//        System.out.println("**************");
-//        System.out.println(queryString);
-//        System.out.println("**************");
-//        System.out.println("Results size: " + results.size());
+        SelectResults<RiskTrade> results = (SelectResults) query.execute(trader, currency, book);
 
-        results.forEach(key ->
+        results.forEach(trade ->
                 {
-//                    System.out.println("Trade id: " + state.riskTradeReadCache.get(key));
-                    state.riskTradeReadCache.get(key);
+                    assert (trade.getTraderName().equals(trader) && trade.getSettleCurrency().equals(currency) && trade.getBook().equals(book));
                 });
+        assert (results.size() > 0);
     }
 
     @Benchmark
+    @Measurement(iterations = ITERATIONS)
     public void b06_GetTradeBookFilterHasIndex(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String book = DUMMY_BOOK+id;
         String queryString =
-                "select e.id from " +
+                "select * from " +
                     state.riskTradeReadCache.getFullPath() +
-                " e where e.book = 'book'";
+                " e where e.book = $1";
 
         Pool pool = PoolManager.find(POOL_NAME);
         Query query = pool.getQueryService().newQuery(queryString);
-        SelectResults<Integer> results = (SelectResults) query.execute();//("book");
+        SelectResults<RiskTrade> results = (SelectResults) query.execute(book);
 
-//        System.out.println("**************");
-//        System.out.println(query.getQueryString());
-//        System.out.println("Results size: " + results.size());
-//        System.out.println("**************");
-
-//        int expectedCount = riskTradeList.size();
-        final AtomicInteger counter = new AtomicInteger(0);
-
-//        logger.info(query.getQueryString());
-//        logger.info("Results size: " + results.size());
-
-        results.forEach(key ->
+        results.forEach(trade ->
                 {
-                    state.riskTradeReadCache.get(key);
-                    counter.incrementAndGet();
+                    assert (trade.getBook().equals(book));
                 });
-        assert (counter.get() > 0);
+        assert (results.size() > 0);
+    }
+
+    @Benchmark
+    @Measurement(iterations = ITERATIONS)
+    public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
+        String queryString =
+                "select * from " +
+                        state.riskTradeReadCache.getFullPath() +
+                        " e where e.id >= $1 and e.id <= $2";
+
+        Pool pool = PoolManager.find(POOL_NAME);
+        Query query = pool.getQueryService().newQuery(queryString);
+        SelectResults<RiskTrade> results = (SelectResults) query.execute(min, max);
+
+        results.forEach(trade ->
+        {
+            int id = trade.getId();
+            assert (id >= min && id <= max);
+        });
+        assert (results.size() > 0);
+
     }
 
 

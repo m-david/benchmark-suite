@@ -16,8 +16,16 @@ import java.util.Hashtable;
 final public class RiskTrade implements Serializable {
 
 	private static final long serialVersionUID = 5064782838786161065L;
-	
+
+	@QuerySqlField
 	protected Integer id;
+	@QuerySqlField
+	protected String settleCurrency;
+	@QuerySqlField(index = true)
+	protected String book;
+	@QuerySqlField
+	protected String traderName;
+
 	protected String ecnTradeId;
 	protected String ecnLinkId;
 	protected TradeSource tradeSource;
@@ -27,15 +35,6 @@ final public class RiskTrade implements Serializable {
     protected double quantity;
     protected double tradePrice;
     protected String tradeCurrency;
-
-	@QuerySqlField
-    protected String settleCurrency;
-
-	@QuerySqlField(index = true)
-    protected String book;
-
-	@QuerySqlField
-    protected String traderName;
 
     protected String counterParty;
     protected Date enteredDate;

@@ -6,6 +6,7 @@ import com.tangosol.util.Filter;
 import com.tangosol.util.ValueExtractor;
 import com.tangosol.util.extractor.PofExtractor;
 import com.tangosol.util.filter.AllFilter;
+import com.tangosol.util.filter.BetweenFilter;
 import com.tangosol.util.filter.EqualsFilter;
 import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
@@ -17,10 +18,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +30,8 @@ import static common.BenchmarkConstants.*;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 //@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
 @BenchmarkMode({Mode.SampleTime})
-public class CoherenceUseCasesBenchmark {
+public class CoherenceUseCasesBenchmark
+{
 
     private static Logger logger = LoggerFactory.getLogger(CoherenceUseCasesBenchmark.class);
 
@@ -54,6 +53,7 @@ public class CoherenceUseCasesBenchmark {
             riskTradeOffHeapCache = CacheFactory.getCache(TRADE_OFFHEAP_MAP);
             riskTradeList = getMeDummyRiskTrades();
             putRiskTrades(riskTradeReadCache, riskTradeList);
+
         }
 
         @TearDown(Level.Trial)
@@ -64,83 +64,131 @@ public class CoherenceUseCasesBenchmark {
     }
 
     //region FIXTURE
-    @Measurement(iterations = 100000)
-    @Warmup(iterations = 5)
+    @Benchmark
+    @Measurement(iterations = ITERATIONS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get(state.randomizer.nextInt(state.riskTradeList.size()));
+        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     } // 164 seconds for 100000
 
     @Benchmark
-    @Measurement(iterations = 1000)
-    @Warmup(iterations = 5)
+    @Measurement(iterations = ITERATIONS)
     public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = state.randomizer.nextInt(state.riskTradeList.size() - BATCH_SIZE);
+        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
     @Benchmark
-    public void b03_GetAllRiskTradesSingle(InitReadCacheState state) throws Exception {
-
-        fetchAllRecordsOneByOne(state.riskTradeReadCache);
+    @Measurement(iterations = ITERATIONS)
+    public void b03_GetAllRiskTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     } // 131 seconds for 100000
 
     @Benchmark
-    public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception {
+    @Measurement(iterations = ITERATIONS)
+    public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
+    {
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String currency = DUMMY_CURRENCY+id;
         ValueExtractor valueExtractor = new PofExtractor(null, 10);
-        Filter filter = new EqualsFilter(valueExtractor, "USD");
 
-        Set<Integer> allRiskTradesWhereCurrencyIsUsd = state.riskTradeReadCache.keySet(filter);
-        allRiskTradesWhereCurrencyIsUsd.forEach(key -> state.riskTradeReadCache.get(key));
+        Filter filter = new EqualsFilter(valueExtractor, currency);
+
+        Collection<RiskTrade> results = state.riskTradeReadCache.values(filter);
+
+        results.forEach(trade ->
+        {
+            assert (trade.getSettleCurrency().equals(currency));
+        });
+        assert (results.size() > 0);
+
     } // 66 seconds to apply filter and get 50,000 records out of 100000
 
     @Benchmark
-    public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception {
+    @Measurement(iterations = ITERATIONS)
+    public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception
+    {
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String trader = DUMMY_TRADER+id;
+        String currency = DUMMY_CURRENCY+id;
+        String book = DUMMY_BOOK+id;
 
         ValueExtractor currencyExtractor = new PofExtractor(null, 10);
-        Filter currencyFilter = new EqualsFilter(currencyExtractor, "USD");
+        Filter currencyFilter = new EqualsFilter(currencyExtractor, currency);
 
         ValueExtractor bookExtractor = new PofExtractor(null, 11);
-        Filter bookFilter = new EqualsFilter(bookExtractor, "book");
+        Filter bookFilter = new EqualsFilter(bookExtractor, book);
 
         ValueExtractor traderNameExtractor = new PofExtractor(null, 12);
-        Filter traderNameFilter = new EqualsFilter(traderNameExtractor, "traderName");
+        Filter traderNameFilter = new EqualsFilter(traderNameExtractor, trader);
 
         Filter allFilters =
-            new AllFilter(new Filter[] {currencyFilter, bookFilter, traderNameFilter});
+                new AllFilter(new Filter[]{currencyFilter, bookFilter, traderNameFilter});
 
-        Set<Integer> keys = state.riskTradeReadCache.keySet(allFilters);
-        keys.forEach(key -> state.riskTradeReadCache.get(key));
+        Collection<RiskTrade> results = state.riskTradeReadCache.values(allFilters);
+        results.forEach(trade ->
+        {
+            assert (trade.getTraderName().equals(trader) && trade.getSettleCurrency().equals(currency) && trade.getBook().equals(book));
+        });
+        assert (results.size() > 0);
 
     }// 64 seconds to apply filter and get 50,000 records out of 100000
 
     @Benchmark
-    public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception {
+    @Measurement(iterations = ITERATIONS)
+    /**
+     * Note:  Indexes are only available in Coherence Enterprise Edition and higher
+     */
+    public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception
+    {
+        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        String book = DUMMY_BOOK+id;
+
         ValueExtractor bookExtractor = new PofExtractor(null, 11);
-        Filter bookFilter = new EqualsFilter(bookExtractor, "book");
+        Filter bookFilter = new EqualsFilter(bookExtractor, book);
 
-        final AtomicInteger counter = new AtomicInteger(0);
+        Collection<RiskTrade> results = state.riskTradeReadCache.values(bookFilter);
 
-        Set<Integer> result = state.riskTradeReadCache.keySet(bookFilter);
-
-        result.forEach(key ->
-                {
-                    state.riskTradeReadCache.get(key);
-                    counter.incrementAndGet();
-                });
-        assert (counter.get() > 0);
+        results.forEach(trade ->
+        {
+            assert(trade.getBook().equals(book));
+        });
+        assert (results.size() > 0);
 
 
     } // 129 seconds for getting 100000 records
-    //endregion
+
+    @Benchmark
+    @Measurement(iterations = ITERATIONS)
+    public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
+        ValueExtractor idExtractor = new PofExtractor(null, 0);
+
+        BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);
+
+        Collection<RiskTrade> results = state.riskTradeReadCache.values(betweenFilter);
+
+        results.forEach(trade ->
+        {
+            assert(trade.getId() >= min && trade.getId() <= max);
+        });
+        assert (results.size() > 0);
+
+    }
+
+        //endregion
 
     private static void putAllRiskTradesInBulk(Blackhole blackhole, NamedCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize)
     {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-        for(int i = startIndex; i < batchSize && i < riskTradeList.size(); i++)
+        for (int i = startIndex; i < batchSize && i < riskTradeList.size(); i++)
         {
             RiskTrade riskTrade = riskTradeList.get(i);
             trades.put(riskTrade.getId(), riskTrade);
@@ -149,15 +197,19 @@ public class CoherenceUseCasesBenchmark {
     }
 
 
-    private static void fetchAllRecordsOneByOne(NamedCache riskTradeCache) {
+    private static void fetchAllRecordsOneByOne(NamedCache riskTradeCache)
+    {
         final Set set = riskTradeCache.keySet();
-        for (Object key : set) {
+        for (Object key : set)
+        {
             final Object o1 = riskTradeCache.get(key);
         }
     }
 
-    private static void putRiskTrades(NamedCache riskTradeCache, List<RiskTrade> riskTradeList) {
-        for (RiskTrade riskTrade : riskTradeList) {
+    private static void putRiskTrades(NamedCache riskTradeCache, List<RiskTrade> riskTradeList)
+    {
+        for (RiskTrade riskTrade : riskTradeList)
+        {
             riskTradeCache.put(riskTrade.getId(), riskTrade);
         }
     }
@@ -168,13 +220,14 @@ public class CoherenceUseCasesBenchmark {
 
         for (RiskTrade riskTrade : riskTradeList)
         {
-            for(int i = 0; i < batchSize; i++) {
+            for (int i = 0; i < batchSize; i++)
+            {
                 trades.put(riskTrade.getId(), riskTrade);
             }
             riskTradeCache.putAll(trades);
             trades.clear();
         }
-        if(trades.size() > 0)
+        if (trades.size() > 0)
         {
             riskTradeCache.putAll(trades);
             trades.clear();
@@ -182,15 +235,16 @@ public class CoherenceUseCasesBenchmark {
     }
 
     // local runner for tests
-    public static void main(String[] args) throws RunnerException {
+    public static void main(String[] args) throws RunnerException
+    {
         Options opt = new OptionsBuilder()
-            .include("CoherenceUseCasesBenchmark")
-            .warmupIterations(0)
-            .measurementIterations(1)
-            .forks(1)
-            .jvmArgs("-ea")
-            .shouldFailOnError(false) // switch to "true" to fail the complete run
-            .build();
+                .include("CoherenceUseCasesBenchmark")
+                .warmupIterations(0)
+                .measurementIterations(1)
+                .forks(1)
+                .jvmArgs("-ea")
+                .shouldFailOnError(false) // switch to "true" to fail the complete run
+                .build();
 
         new Runner(opt).run();
     }

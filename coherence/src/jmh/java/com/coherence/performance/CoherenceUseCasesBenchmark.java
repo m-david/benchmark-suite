@@ -1,13 +1,16 @@
 package com.coherence.performance;
 
+import com.coherence.poc.serializer.RiskTradeSerializer;
 import com.tangosol.net.CacheFactory;
 import com.tangosol.net.NamedCache;
 import com.tangosol.util.Filter;
+import com.tangosol.util.QueryHelper;
 import com.tangosol.util.ValueExtractor;
 import com.tangosol.util.extractor.PofExtractor;
 import com.tangosol.util.filter.AllFilter;
 import com.tangosol.util.filter.BetweenFilter;
 import com.tangosol.util.filter.EqualsFilter;
+import com.tangosol.util.filter.LikeFilter;
 import common.BenchmarkUtility;
 import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
@@ -26,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
+import static com.coherence.poc.serializer.RiskTradeSerializer.*;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -55,6 +59,10 @@ public class CoherenceUseCasesBenchmark
             riskTradeList = getMeDummyRiskTrades();
             putRiskTrades(riskTradeReadCache, riskTradeList);
 
+            ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
+            riskTradeReadCache.addIndex(bookExtractor, false, null);
+            ValueExtractor idExtractor = new PofExtractor(null, ID);
+            riskTradeReadCache.addIndex(idExtractor, true, null);
         }
 
         @TearDown(Level.Trial)
@@ -69,7 +77,8 @@ public class CoherenceUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     } // 164 seconds for 100000
@@ -78,7 +87,7 @@ public class CoherenceUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
+        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
@@ -86,18 +95,18 @@ public class CoherenceUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
-    } // 131 seconds for 100000
+    }
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
     public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String currency = DUMMY_CURRENCY+id;
-        ValueExtractor valueExtractor = new PofExtractor(null, 10);
 
+        ValueExtractor valueExtractor = new PofExtractor(null, SETTLE_CURRENCY);
         Filter filter = new EqualsFilter(valueExtractor, currency);
 
         Collection<RiskTrade> results = state.riskTradeReadCache.values(filter);
@@ -108,24 +117,24 @@ public class CoherenceUseCasesBenchmark
         });
         assert (results.size() > 0);
 
-    } // 66 seconds to apply filter and get 50,000 records out of 100000
+    }
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
     public void b05_GetTradesThreeFilter(InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
 
-        ValueExtractor currencyExtractor = new PofExtractor(null, 10);
+        ValueExtractor currencyExtractor = new PofExtractor(null, SETTLE_CURRENCY);
         Filter currencyFilter = new EqualsFilter(currencyExtractor, currency);
 
-        ValueExtractor bookExtractor = new PofExtractor(null, 11);
+        ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
         Filter bookFilter = new EqualsFilter(bookExtractor, book);
 
-        ValueExtractor traderNameExtractor = new PofExtractor(null, 12);
+        ValueExtractor traderNameExtractor = new PofExtractor(null, TRADER_NAME);
         Filter traderNameFilter = new EqualsFilter(traderNameExtractor, trader);
 
         Filter allFilters =
@@ -138,7 +147,7 @@ public class CoherenceUseCasesBenchmark
         });
         assert (results.size() > 0);
 
-    }// 64 seconds to apply filter and get 50,000 records out of 100000
+    }
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
@@ -147,10 +156,10 @@ public class CoherenceUseCasesBenchmark
      */
     public void b06_GetTradeIndexedFilter(InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String book = DUMMY_BOOK+id;
 
-        ValueExtractor bookExtractor = new PofExtractor(null, 11);
+        ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
         Filter bookFilter = new EqualsFilter(bookExtractor, book);
 
         Collection<RiskTrade> results = state.riskTradeReadCache.values(bookFilter);
@@ -162,7 +171,7 @@ public class CoherenceUseCasesBenchmark
         assert (results.size() > 0);
 
 
-    } // 129 seconds for getting 100000 records
+    }
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
@@ -171,7 +180,7 @@ public class CoherenceUseCasesBenchmark
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
         int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
         int max = min + range;
-        ValueExtractor idExtractor = new PofExtractor(null, 0);
+        ValueExtractor idExtractor = new PofExtractor(null, ID);
 
         BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);
 

@@ -11,8 +11,12 @@ import java.util.Hashtable;
 
 
 public class RiskTradeSerializer  implements PofSerializer  {
-	
-		
+
+	public static final int ID = 0;
+	public static final int SETTLE_CURRENCY = 10;
+	public static final int BOOK = 11;
+	public static final int TRADER_NAME = 12;
+
 	public Object deserialize(PofReader in) 
 			   throws IOException 
 			   {
@@ -51,7 +55,7 @@ public class RiskTradeSerializer  implements PofSerializer  {
 			     String inventoryId = null;
 			     String productFamily = null;
 				
-				id = in.readInt(0);
+				id = in.readInt(ID);
 				ecnTradeId = in.readString(1);
 				ecnLinkId = in.readString(2);
 				tradeSource = (TradeSource)in.readObject(3);
@@ -63,9 +67,9 @@ public class RiskTradeSerializer  implements PofSerializer  {
 				tradePrice = in.readDouble(8);
 				tradeCurrency=in.readString(9);
 				
-				settleCurrency=in.readString(10);
-				book=in.readString(11);
-				traderName = in.readString(12);
+				settleCurrency=in.readString(SETTLE_CURRENCY);
+				book=in.readString(BOOK);
+				traderName = in.readString(TRADER_NAME);
 				counterParty =in.readString(13);
 				enteredDate = in.readDate(14);
 				
@@ -133,7 +137,7 @@ public class RiskTradeSerializer  implements PofSerializer  {
 				RiskTrade  trade = (RiskTrade) o;
 				
 				try {
-					out.writeInt(0, trade.getId());
+					out.writeInt(ID, trade.getId());
 					out.writeString(1, trade.getEcnTradeId());
 					out.writeString(2, trade.getEcnLinkId());
 					out.writeObject(3, trade.getTradeSource());
@@ -145,9 +149,9 @@ public class RiskTradeSerializer  implements PofSerializer  {
 					out.writeDouble(8, trade.getTradePrice());
 					out.writeString(9, trade.getTradeCurrency());
 					
-					out.writeString(10, trade.getSettleCurrency());
-					out.writeString(11, trade.getBook());
-					out.writeString(12, trade.getTraderName());
+					out.writeString(SETTLE_CURRENCY, trade.getSettleCurrency());
+					out.writeString(BOOK, trade.getBook());
+					out.writeString(TRADER_NAME, trade.getTraderName());
 					out.writeString(13, trade.getCounterParty());
 					out.writeDateTime(14, trade.getEnteredDate());
 					

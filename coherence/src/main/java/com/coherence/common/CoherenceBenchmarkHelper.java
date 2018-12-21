@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 
-import static common.BenchmarkConstants.NUMBER_OF_TRADES_TO_PROCESS;
+import static common.BenchmarkConstants.*;
 
 /**
  * TODO
@@ -17,7 +17,7 @@ import static common.BenchmarkConstants.NUMBER_OF_TRADES_TO_PROCESS;
  * @since 0.0.1
  */
 public class CoherenceBenchmarkHelper {
-        public static RiskTrade riskTrade(int id, String book) {
+        public static RiskTrade riskTrade(int id, String book, String traderName, String settleCurrency) {
             RiskTrade riskTrade = new RiskTrade();
             riskTrade.setAccrual(20);
             riskTrade.setAction(Action.DUMMY_RISK);
@@ -40,18 +40,14 @@ public class CoherenceBenchmarkHelper {
             riskTrade.setProductFamily("productFamily");
             riskTrade.setQuantity(10);
             riskTrade.setSalesPerson("salesPerson");
-            if ((id % 2) == 0) {
-                riskTrade.setSettleCurrency("USD");
-            } else {
-                riskTrade.setSettleCurrency("GBP");
-            }
+            riskTrade.setSettleCurrency(settleCurrency);
 
             riskTrade.setSettleDate(new Date());
             riskTrade.setStatus(TradeStatus.CANCELLED);
             riskTrade.setTradeCurrency("tradeCurrency");
             riskTrade.setTradeDate(new Date());
             riskTrade.setTradePrice(15);
-            riskTrade.setTraderName("traderName");
+            riskTrade.setTraderName(traderName);
             riskTrade.setTradeSource(TradeSource.BLOOMBERG);
             riskTrade.setTransientKeywords(new Hashtable());
             riskTrade.setUpdatedTime(new Date());
@@ -61,7 +57,7 @@ public class CoherenceBenchmarkHelper {
     public static List<RiskTrade> getMeDummyRiskTrades() {
         List<RiskTrade> riskTrades = new ArrayList<RiskTrade>();
         for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++) {
-            riskTrades.add(riskTrade(i, "book"));
+            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
         }
         return riskTrades;
     }

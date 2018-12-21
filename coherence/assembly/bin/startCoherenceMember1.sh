@@ -23,6 +23,7 @@ JAVA_OPTS="\
 -Dtangosol.pof.config=my-custom-pof-config.xml \
 -Dtangosol.coherence.management=local-only
 -Dtangosol.coherence.override=tangosol-coherence-override.xml \
+-Dtangosol.coherence.extend.host=10.212.1.117 \
 $MEM_OPTS $GC_OPTS"
 
 #-Dtangosol.coherence.localhost=localhost \

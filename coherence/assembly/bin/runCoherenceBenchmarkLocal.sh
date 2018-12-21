@@ -21,9 +21,15 @@ $APP_HOME/lib/*
 MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/coherence-gc.$TODAY.$APP_PID.log"
 
-JAVA_OPTS="-server -showversion $MEM_OPTS $GC_OPTS \
--Dtangosol.coherence.cacheconfig=tangosol-java-client-local-config.xml \
--Dtangosol.pof.config=my-custom-pof-config.xml"
+JAVA_OPTS="\
+-server -Djava.net.preferIPv4Stack=true -showversion \
+-Dtangosol.coherence.cacheconfig=tangosol-java-client-config.xml \
+-Dtangosol.coherence.proxy.address=127.0.0.1 \
+-Dtangosol.pof.config=my-custom-pof-config.xml \
+$MEM_OPTS $GC_OPTS"
+
+
+
 
 JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/coherence.$TODAY.$APP_PID.json -o $APP_HOME/results/coherence.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 

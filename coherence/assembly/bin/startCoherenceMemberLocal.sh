@@ -4,7 +4,7 @@ PRG="$0"
 PRGDIR=`dirname "$PRG"`
 APP_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 
-WORK_DIRECTORY="$APP_HOME/server2/logs"
+WORK_DIRECTORY="$APP_HOME/server1/logs"
 if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
@@ -23,7 +23,7 @@ JAVA_OPTS="\
 -Dtangosol.pof.config=my-custom-pof-config.xml \
 -Dtangosol.coherence.management=local-only
 -Dtangosol.coherence.override=tangosol-coherence-override.xml \
--Dtangosol.coherence.extend.host=10.212.1.118 \
+-Dtangosol.coherence.extend.host=127.0.0.1 \
 $MEM_OPTS $GC_OPTS"
 
 #-Dtangosol.coherence.localhost=localhost \

@@ -15,8 +15,8 @@
                     <!--<port>8088</port>-->
                 <!--</socket-address>-->
             </well-known-addresses>
-            <!--<address system-property="tangosol.coherence.localhost">localhost</address>-->
-            <!--<port-auto-adjust system-property="tangosol.coherence.localport.adjust">true</port-auto-adjust>-->
+            <address system-property="tangosol.coherence.localhost">localhost</address>
+            <port-auto-adjust system-property="tangosol.coherence.localport.adjust">true</port-auto-adjust>
 
         </unicast-listener>
         <!--<multicast-listener>

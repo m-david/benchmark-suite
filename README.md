@@ -1,7 +1,7 @@
 # Benchmark-Suite
 Benchmarks of different IMDG Products.  Focused on Off-Heap capabilities.
 
-##Product List
+## Product List
 
 Vendor | Product | Version
 --- |--- |---
@@ -14,39 +14,39 @@ GridGain | Apache Ignite | 2.7.0
 
 To build and package the application, run:
 
-###Coherence
+### Coherence
 
-####Manual build
+#### Manual build
 ```bash
 gradle -Dorg.gradle.daemon=false coherence:clean coherence:buildAll
 ```
 
-###Geode
+### Geode
 
-####Manual build
+#### Manual build
 ```bash
 gradle -Dorg.gradle.daemon=false geode:clean geode:buildAll
 ```
 
-###Hazelcast
+### Hazelcast
 
-####Manual build
+#### Manual build
 ```bash
 gradle -Dorg.gradle.daemon=false hazelcast:clean hazelcast:buildAll
 ```
 
-###Ignite
+### Ignite
 
-####Manual build
+#### Manual build
 ```bash
 gradle -Dorg.gradle.daemon=false ignite:clean ignite:buildAll
 ```
 
-##Running the Benchmarks
+## Running the Benchmarks
 
-###Hazelcast
+### Hazelcast
 
-####Extract the libraries
+#### Extract the libraries
 
 ```bash
 cd ./hazelcast/build/distributions

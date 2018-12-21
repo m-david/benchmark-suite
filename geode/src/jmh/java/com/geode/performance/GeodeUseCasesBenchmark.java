@@ -129,7 +129,7 @@ public class GeodeUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
         putAllRiskTradesInBulk(
@@ -142,7 +142,7 @@ public class GeodeUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
@@ -168,7 +168,7 @@ public class GeodeUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String queryString = "select * from " + state.riskTradeReadCache.getFullPath() +
@@ -194,7 +194,7 @@ public class GeodeUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b06_GetTradeBookFilterHasIndex(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String book = DUMMY_BOOK+id;

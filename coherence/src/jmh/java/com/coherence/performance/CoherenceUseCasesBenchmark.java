@@ -76,7 +76,7 @@ public class CoherenceUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
@@ -84,7 +84,7 @@ public class CoherenceUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b03_GetAllRiskTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
@@ -112,7 +112,7 @@ public class CoherenceUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b05_GetTradeThreeFilter(InitReadCacheState state) throws Exception
+    public void b05_GetTradesThreeFilter(InitReadCacheState state) throws Exception
     {
         int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
@@ -145,7 +145,7 @@ public class CoherenceUseCasesBenchmark
     /**
      * Note:  Indexes are only available in Coherence Enterprise Edition and higher
      */
-    public void b06_GetTradeBookFilterHasIndex(InitReadCacheState state) throws Exception
+    public void b06_GetTradeIndexedFilter(InitReadCacheState state) throws Exception
     {
         int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
         String book = DUMMY_BOOK+id;

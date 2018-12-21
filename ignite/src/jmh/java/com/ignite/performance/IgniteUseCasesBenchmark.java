@@ -126,7 +126,7 @@ public class IgniteUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
@@ -156,7 +156,7 @@ public class IgniteUseCasesBenchmark
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
-    public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;

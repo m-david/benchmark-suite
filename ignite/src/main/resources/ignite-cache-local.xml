@@ -111,13 +111,13 @@
                     <property name="name" value="RiskTradeMapRead"/>
                     <property name="sqlSchema" value="PUBLIC"/>
 
-                    <property name="evictionPolicy">
-                        <!-- LRU eviction policy. -->
-                        <bean class="org.apache.ignite.cache.eviction.lru.LruEvictionPolicy">
-                            <!-- Set the maximum cache size to 1 million (default is 100,000). -->
-                            <property name="maxSize" value="1000000"/>
-                        </bean>
-                    </property>
+                    <!--<property name="evictionPolicy">-->
+                        <!--&lt;!&ndash; LRU eviction policy. &ndash;&gt;-->
+                        <!--<bean class="org.apache.ignite.cache.eviction.lru.LruEvictionPolicy">-->
+                            <!--&lt;!&ndash; Set the maximum cache size to 1 million (default is 100,000). &ndash;&gt;-->
+                            <!--<property name="maxSize" value="1000000"/>-->
+                        <!--</bean>-->
+                    <!--</property>-->
 
                     <property name="queryEntities">
                         <list>
@@ -147,7 +147,7 @@
                     </property>
 
                     <!-- Enabling on-heap caching for this distributed cache. -->
-                    <property name="onheapCacheEnabled" value="true"/>
+                    <property name="onheapCacheEnabled" value="false"/>
                     <property name="atomicityMode" value="ATOMIC"/>
                     <property name="backups" value="1"/>
                     <!--<property name="memoryPolicyName" value="EMPTY_Region_Eviction"/>-->
@@ -179,7 +179,7 @@
                         <property name="addresses">
                             <list>
                                 <!-- In distributed environment, replace with actual hosts IP addresses. -->
-                                <value>192.168.5.225:48500..48501</value>
+                                <value>127.0.0.1:48500..48501</value>
                             </list>
                         </property>
                     </bean>

@@ -5,11 +5,13 @@
     <caching-scheme-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapRead</cache-name>
-            <scheme-name>BENCHMARK-Partitioned</scheme-name>
+            <!--<scheme-name>BENCHMARK-Partitioned</scheme-name>-->
+            <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
         </cache-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapOffheap</cache-name>
-            <scheme-name>BENCHMARK-Partitioned</scheme-name>
+            <!--<scheme-name>BENCHMARK-Partitioned</scheme-name>-->
+            <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
         </cache-mapping>
     </caching-scheme-mapping>
 

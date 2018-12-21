@@ -33,8 +33,12 @@
     </network>
 
     <map name="RiskTradeMapRead">
+        <in-memory-format>NATIVE</in-memory-format>
         <async-backup-count>0</async-backup-count>
         <backup-count>1</backup-count>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">100000</max-size>
+        <eviction-percentage>25</eviction-percentage>
         <indexes>
             <index ordered="true">id</index>
             <index ordered="false">book</index>

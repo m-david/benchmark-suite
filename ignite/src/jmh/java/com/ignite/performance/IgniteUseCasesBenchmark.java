@@ -1,9 +1,8 @@
 package com.ignite.performance;
 
 import com.ignite.poc.model.RiskTrade;
-import com.ignite.poc.query.RiskTradeBookScanQuery;
-import com.ignite.poc.query.RiskTradeSettleCurrencyScanQuery;
 import com.ignite.poc.query.RiskTradeThreeFieldScanQuery;
+import common.BenchmarkUtility;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
@@ -26,7 +25,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.ignite.benchmark.common.IgniteBenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.ignite.performance.support.DummyData.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
 
@@ -112,7 +110,8 @@ public class IgniteUseCasesBenchmark
 //    @Warmup(iterations = 2)
     public void b01_InsertTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
     }
 
@@ -121,7 +120,7 @@ public class IgniteUseCasesBenchmark
 //    @Warmup(iterations = 2)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
+        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()- BATCH_SIZE);
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
@@ -129,7 +128,7 @@ public class IgniteUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
@@ -138,7 +137,7 @@ public class IgniteUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "traderName = ?");
         query.setArgs(trader);
@@ -159,7 +158,7 @@ public class IgniteUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -193,7 +192,7 @@ public class IgniteUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "book = ?");
         String book = DUMMY_BOOK+id;
         query.setArgs(book);
@@ -214,9 +213,9 @@ public class IgniteUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
-        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
-        SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "id >= ? and id <= ?");
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;        SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "id >= ? and id <= ?");
         query.setArgs(Integer.valueOf(min), Integer.valueOf(max));
         try(QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = state.riskTradeReadCache.query(query))
         {

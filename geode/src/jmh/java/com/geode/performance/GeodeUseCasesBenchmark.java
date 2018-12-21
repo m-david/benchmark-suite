@@ -1,6 +1,7 @@
 package com.geode.performance;
 
 import com.geode.domain.serializable.RiskTrade;
+import common.BenchmarkUtility;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -120,7 +121,8 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     }
@@ -129,7 +131,7 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b02_InsertTradesBulk1000(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
+        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
         putAllRiskTradesInBulk(
                 blackhole,
                 state.riskTradeOffHeapCache,
@@ -142,7 +144,7 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b03_GetAllTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
@@ -150,7 +152,7 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String currency = DUMMY_CURRENCY+id;
 
         Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select * from " + state.riskTradeReadCache.getFullPath() +
@@ -168,7 +170,7 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b05_GetTradeThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String queryString = "select * from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.traderName = $1" +
                 " and e.settleCurrency = $2" +
@@ -194,7 +196,7 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b06_GetTradeBookFilterHasIndex(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String book = DUMMY_BOOK+id;
         String queryString =
                 "select * from " +
@@ -216,8 +218,9 @@ public class GeodeUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
-        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;
         String queryString =
                 "select * from " +
                         state.riskTradeReadCache.getFullPath() +

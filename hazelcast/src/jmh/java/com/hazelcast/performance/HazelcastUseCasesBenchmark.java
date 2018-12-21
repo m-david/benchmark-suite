@@ -10,6 +10,7 @@ import com.hazelcast.query.PredicateBuilder;
 import com.hazelcast.query.Predicates;
 import com.hazelcast.simulator.worker.loadsupport.MapStreamer;
 import com.hazelcast.simulator.worker.loadsupport.MapStreamerFactory;
+import common.BenchmarkUtility;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
@@ -85,7 +86,8 @@ public class HazelcastUseCasesBenchmark
     @Warmup(iterations = 2)
     public void b01_InsertTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        RiskTrade riskTrade = state.riskTradeList.get((int) (state.randomizer.nextDouble() * state.riskTradeList.size()));
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.set(riskTrade.getId(), riskTrade);
 
     }
@@ -95,7 +97,7 @@ public class HazelcastUseCasesBenchmark
     @Warmup(iterations = 2)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = ((int) (state.randomizer.nextDouble() * state.riskTradeList.size())) - BATCH_SIZE;
+        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-BATCH_SIZE);
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
@@ -104,15 +106,15 @@ public class HazelcastUseCasesBenchmark
 //    @Warmup(iterations = 5)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
-        blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
+        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        blackhole.consume(state.riskTradeReadCache.get(index));
     }
 
     @Benchmark
     @Measurement(iterations = ITERATIONS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         Predicate predicate = new PredicateBuilder().getEntryObject().get("traderName").equal(trader);
 
@@ -129,7 +131,7 @@ public class HazelcastUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -157,7 +159,7 @@ public class HazelcastUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
+        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
         String book = DUMMY_BOOK+id;
         Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal(book);
         Collection<RiskTrade> result = state.riskTradeReadCache.values(predicate);
@@ -172,8 +174,9 @@ public class HazelcastUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
-        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;
         Collection<RiskTrade> result = state.riskTradeReadCache.values(Predicates.between("id", min, max));
         result.forEach(trade -> {
             assert (trade.getId() >= min && trade.getId() <= max);

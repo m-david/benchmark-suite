@@ -8,6 +8,7 @@ import com.tangosol.util.extractor.PofExtractor;
 import com.tangosol.util.filter.AllFilter;
 import com.tangosol.util.filter.BetweenFilter;
 import com.tangosol.util.filter.EqualsFilter;
+import common.BenchmarkUtility;
 import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -167,8 +168,9 @@ public class CoherenceUseCasesBenchmark
     @Measurement(iterations = ITERATIONS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int min = (int) (state.randomizer.nextDouble() * state.riskTradeList.size());
-        int max = min + (int) (state.randomizer.nextDouble() * state.riskTradeList.size() * RANGE_PERCENT);
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;
         ValueExtractor idExtractor = new PofExtractor(null, 0);
 
         BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);

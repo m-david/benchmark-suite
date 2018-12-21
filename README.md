@@ -7,7 +7,7 @@ Vendor | Product | Version
 --- |--- |---
 Oracle | Coherence | 12.2.1-3-0
 Pivotal | Apache Geode | 1.7.0
-Hazelcast | Hazelcast IMDG | 3.10.5
+Hazelcast | Hazelcast IMDG | 3.11.1
 GridGain | Apache Ignite | 2.7.0
 
 ## Building the Benchmark Applications

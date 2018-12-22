@@ -5,27 +5,15 @@
     <caching-scheme-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapRead</cache-name>
-            <!--<scheme-name>BENCHMARK-Partitioned</scheme-name>-->
             <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
         </cache-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapOffheap</cache-name>
-            <!--<scheme-name>BENCHMARK-Partitioned</scheme-name>-->
             <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
         </cache-mapping>
     </caching-scheme-mapping>
 
     <caching-schemes>
-
-        <!--<distributed-scheme>-->
-            <!--<scheme-name>BENCHMARK-Partitioned</scheme-name>-->
-            <!--<service-name>BENCHMARK-PartitionedCacheService</service-name>-->
-            <!--<backup-count>1</backup-count>-->
-            <!--<backing-map-scheme>-->
-                <!--<local-scheme/>-->
-            <!--</backing-map-scheme>-->
-            <!--<autostart>true</autostart>-->
-        <!--</distributed-scheme>-->
 
         <distributed-scheme>
             <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
@@ -38,31 +26,12 @@
 
             <backup-storage>
                 <type>off-heap</type>
-                <initial-size>1GB</initial-size>
-                <maximum-size>4GB</maximum-size>
+                <initial-size>1MB</initial-size>
+                <maximum-size>256MB</maximum-size>
             </backup-storage>
-
-            <!--<backing-map-scheme>-->
-                <!--<partitioned>true</partitioned>-->
-                <!--<external-scheme>-->
-                    <!--<scheme-ref>external-backing-map</scheme-ref>-->
-                <!--</external-scheme>-->
-            <!--</backing-map-scheme>-->
 
             <autostart>true</autostart>
         </distributed-scheme>
-
-        <!--<external-scheme>-->
-            <!--<scheme-name>external-backing-map</scheme-name>-->
-            <!--<nio-memory-manager>-->
-                <!--<initial-size>1MB</initial-size>-->
-                <!--<maximum-size>3MB</maximum-size>-->
-            <!--</nio-memory-manager>-->
-            <!--<high-units>512</high-units>-->
-            <!--<unit-calculator>BINARY</unit-calculator>-->
-            <!--<unit-factor>1048576</unit-factor>-->
-            <!--<expiry-delay>{back-expiry-delay 1h}</expiry-delay>-->
-        <!--</external-scheme>-->
 
         <proxy-scheme>
             <scheme-name>TCP-Extend</scheme-name>

@@ -24,7 +24,8 @@ JAVA_OPTS="\
 -Dtangosol.coherence.management=local-only
 -Dtangosol.coherence.override=tangosol-coherence-override.xml \
 -Dtangosol.coherence.extend.host=10.212.1.118 \
-$MEM_OPTS $GC_OPTS"
+$MEM_OPTS \
+$GC_OPTS"
 
 #-Dtangosol.coherence.localhost=localhost \
 #-Dtangosol.coherence.localport=9090 \

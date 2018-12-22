@@ -34,7 +34,7 @@ JAVA_OPTS="-server -showversion \
 -DLOCATOR_HOST=localhost \
 -DLOCATOR_PORT=10680 \
 -Dlog4j.configurationFile=$APP_HOME/conf/log4j2.xml \
--Dbenchmark.record.count=1000000 \
+-Dbenchmark.record.count=100000 \
 -Dbenchmark.batch.size=5000 \
 -Dbenchmark.range.percent=0.05 \
 $MEM_OPTS $GC_OPTS"

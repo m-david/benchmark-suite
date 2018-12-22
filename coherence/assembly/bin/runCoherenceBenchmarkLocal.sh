@@ -26,6 +26,9 @@ JAVA_OPTS="\
 -Dtangosol.coherence.cacheconfig=tangosol-java-client-config.xml \
 -Dtangosol.coherence.proxy.address=127.0.0.1 \
 -Dtangosol.pof.config=my-custom-pof-config.xml \
+-Dbenchmark.record.count=100000 \
+-Dbenchmark.batch.size=5000 \
+-Dbenchmark.range.percent=0.05 \
 $MEM_OPTS $GC_OPTS"
 
 

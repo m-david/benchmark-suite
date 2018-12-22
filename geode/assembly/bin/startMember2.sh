@@ -26,7 +26,6 @@ CLASS_PATH="$APP_HOME/benchmark.geode-1.0-SNAPSHOT.jar:$APP_HOME/conf:$APP_HOME/
 APP_PID=$RANDOM
 TODAY=`date +%Y-%m-%d.%H-%M-%S`
 
-
 MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/geode-gc.$TODAY.$APP_PID.log"
 JAVA_OPTS="-server -showversion \
@@ -34,10 +33,10 @@ JAVA_OPTS="-server -showversion \
 -Dgemfire.locators=10.212.1.116[10680] \
 -Dgemfire.cache-xml-file=$APP_HOME/conf/geode-server.xml \
 -Dgemfire.server-port=40406
- -Dgemfire.jmx-manager-port=2098 \
+-Dgemfire.jmx-manager-port=2098 \
 -Dgemfire.bind-address=10.212.1.118 \
 -Dgemfire.name=$MEMBER_NAME \
--Dgemfire.off-heap-memory-size=512M \
+-Dgemfire.off-heap-memory-size=4G \
 -Dgemfire.critical-off-heap-percentage=90 \
 -Dgemfire.eviction-off-heap-percentage=80 \
 $MEM_OPTS $GC_OPTS"

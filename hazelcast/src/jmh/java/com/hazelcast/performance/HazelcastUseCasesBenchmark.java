@@ -81,8 +81,9 @@ public class HazelcastUseCasesBenchmark
 
     }
 
+    //region fixture
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     @Warmup(iterations = 2)
     public void b01_InsertTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
@@ -93,7 +94,7 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     @Warmup(iterations = 2)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
@@ -102,7 +103,7 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
 //    @Warmup(iterations = 5)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
@@ -111,7 +112,7 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -128,7 +129,7 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -156,7 +157,7 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -171,7 +172,7 @@ public class HazelcastUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
@@ -184,6 +185,7 @@ public class HazelcastUseCasesBenchmark
 
         assert(result.size() > 0);
     }
+    //endregion
 
     private static void populateReadMap(IMap<Integer, RiskTrade> riskTradeReadIMap, List<RiskTrade> riskTradeList)
     {

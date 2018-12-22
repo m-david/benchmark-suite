@@ -34,7 +34,11 @@ fi
 JAVA_OPTS="-server -showversion \
 -Dhazelcast.client.config=$HAZELCAST_HOME/conf/hazelcast-client.xml \
 -Dhazelcast.system.log.enabled=true \
--Dbenchmark.useAsyncMapStreamer=$HZ_USE_ASYNC_MAP_STREAMER $MEM_OPTS \
+-Dbenchmark.useAsyncMapStreamer=$HZ_USE_ASYNC_MAP_STREAMER \
+-Dbenchmark.record.count=100000 \
+-Dbenchmark.batch.size=5000 \
+-Dbenchmark.range.percent=0.05 \
+$MEM_OPTS \
 $GC_OPTS"
 
 JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $WORK_DIRECTORY/hazelcast.$TODAY.$APP_PID.json -o $WORK_DIRECTORY/hazelcast.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"

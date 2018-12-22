@@ -53,7 +53,7 @@
     </cache>
 
     <native-memory allocator-type="POOLED" enabled="true">
-        <size unit="MEGABYTES" value="512" />
+        <size unit="MEGABYTES" value="4096" />
         <metadata-space-percentage>25</metadata-space-percentage>
     </native-memory>
 

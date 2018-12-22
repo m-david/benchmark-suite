@@ -36,7 +36,7 @@ JAVA_OPTS="-server -showversion \
 -Dgemfire.jmx-manager-port=2099 \
 -Dgemfire.bind-address=10.212.1.117 \
 -Dgemfire.name=$MEMBER_NAME \
--Dgemfire.off-heap-memory-size=512M \
+-Dgemfire.off-heap-memory-size=4G \
 -Dgemfire.critical-off-heap-percentage=90 \
 -Dgemfire.eviction-off-heap-percentage=80 \
 $MEM_OPTS $GC_OPTS"

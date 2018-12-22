@@ -1,16 +1,13 @@
 package com.coherence.performance;
 
-import com.coherence.poc.serializer.RiskTradeSerializer;
 import com.tangosol.net.CacheFactory;
 import com.tangosol.net.NamedCache;
 import com.tangosol.util.Filter;
-import com.tangosol.util.QueryHelper;
 import com.tangosol.util.ValueExtractor;
 import com.tangosol.util.extractor.PofExtractor;
 import com.tangosol.util.filter.AllFilter;
 import com.tangosol.util.filter.BetweenFilter;
 import com.tangosol.util.filter.EqualsFilter;
-import com.tangosol.util.filter.LikeFilter;
 import common.BenchmarkUtility;
 import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
@@ -25,11 +22,10 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
-import static common.BenchmarkConstants.*;
 import static com.coherence.poc.serializer.RiskTradeSerializer.*;
+import static common.BenchmarkConstants.*;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -72,9 +68,9 @@ public class CoherenceUseCasesBenchmark
         }
     }
 
-    //region FIXTURE
+    //region fixture
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -84,7 +80,7 @@ public class CoherenceUseCasesBenchmark
     } // 164 seconds for 100000
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
@@ -92,7 +88,7 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -100,7 +96,7 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -120,7 +116,7 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -150,7 +146,7 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     /**
      * Note:  Indexes are only available in Coherence Enterprise Edition and higher
      */
@@ -174,7 +170,7 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);

@@ -34,6 +34,10 @@ fi
 JAVA_OPTS="-server -showversion \
 -Dbenchmark.ignite.addresses=10.212.1.117:40100 \
 -DIGNITE_QUIET=false \
+-Dbenchmark.record.count=1000000 \
+-Dbenchmark.batch.size=5000 \
+-Dbenchmark.range.percent=0.05 \
+$MEM_OPTS \
 $GC_OPTS"
 
 JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.json -o $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"

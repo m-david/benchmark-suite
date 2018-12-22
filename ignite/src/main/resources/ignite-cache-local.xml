@@ -49,10 +49,9 @@
                 <property name="defaultDataRegionConfiguration">
                     <bean class="org.apache.ignite.configuration.DataRegionConfiguration">
                         <property name="name" value="Default_Region"/>
-                        <!-- 100 MB memory region with disabled eviction -->
-                        <property name="initialSize" value="#{250L * 1024 * 1024}"/>
-                        <property name="maxSize"     value="#{250L * 1024 * 1024}"/>
-                        <property name="persistenceEnabled" value="false"/>
+                        <!-- 50 MB memory region with disabled eviction -->
+                        <property name="initialSize" value="#{20 * 1024 * 1024}"/>
+                        <property name="maxSize"     value="#{50 * 1024 * 1024}"/>
                     </bean>
                 </property>
 
@@ -61,18 +60,27 @@
                 <!-- Defining several data regions for different memory regions -->
                 <property name="dataRegionConfigurations">
                     <list>
-                        <!--
-                            Memory region of 40 MBs in size with an eviction enabled.
-                        -->
+
                         <bean class="org.apache.ignite.configuration.DataRegionConfiguration">
-                            <property name="name" value="100MB_Region_Eviction"/>
-                            <!-- Memory region of 100 MB initial/max size. -->
-                            <property name="initialSize" value="#{200L * 1024 * 1024}"/>
-                            <property name="maxSize" value="#{250L * 1024 * 1024}"/>
+                            <property name="name" value="Benchmark_Region"/>
+                            <!-- Memory region of 256 MB initial/max size. -->
+                            <property name="initialSize"    value="#{512 * 1024 * 1024}"/>
+                            <property name="maxSize"        value="#{512 * 1024 * 1024}"/>
                             <!-- Enabling eviction for this memory region -->
                             <property name="pageEvictionMode" value="RANDOM_2_LRU"/>
                             <property name="persistenceEnabled" value="false"/>
                         </bean>
+
+                        <!--<bean class="org.apache.ignite.configuration.DataRegionConfiguration">-->
+                            <!--<property name="name" value="Benchmark_Region"/>-->
+                            <!--&lt;!&ndash; Memory region of 2 GB initial/max size. &ndash;&gt;-->
+                            <!--<property name="initialSize"    value="#{4L * 1024 * 1024 * 1024}"/>-->
+                            <!--<property name="maxSize"        value="#{4L * 1024 * 1024 * 1024}"/>-->
+                            <!--&lt;!&ndash; Enabling eviction for this memory region &ndash;&gt;-->
+                            <!--<property name="pageEvictionMode" value="RANDOM_2_LRU"/>-->
+                            <!--<property name="persistenceEnabled" value="false"/>-->
+                        <!--</bean>-->
+
 
                     </list>
                 </property>
@@ -88,36 +96,11 @@
                     <property name="backups" value="1"/>
                 </bean>
 
-                <!--<bean class="org.apache.ignite.configuration.CacheConfiguration">-->
-                    <!--<property name="name" value="RiskTradeMap"/>-->
-                    <!--<property name="sqlSchema" value="PUBLIC"/>-->
-
-                    <!--&lt;!&ndash; Enabling on-heap caching for this distributed cache. &ndash;&gt;-->
-                    <!--<property name="onheapCacheEnabled" value="true"/>-->
-                    <!--<property name="atomicityMode" value="ATOMIC"/>-->
-                    <!--<property name="backups" value="1"/>-->
-                    <!--&lt;!&ndash;<property name="memoryPolicyName" value="EMPTY_Region_Eviction"/>&ndash;&gt;-->
-
-                    <!--<property name="evictionPolicy">-->
-                        <!--&lt;!&ndash; LRU eviction policy. &ndash;&gt;-->
-                        <!--<bean class="org.apache.ignite.cache.eviction.lru.LruEvictionPolicy">-->
-                            <!--&lt;!&ndash; Set the maximum cache size to 1 million (default is 100,000). &ndash;&gt;-->
-                            <!--<property name="maxSize" value="1000000"/>-->
-                        <!--</bean>-->
-                    <!--</property>-->
-                <!--</bean>-->
-
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
                     <property name="name" value="RiskTradeMapRead"/>
+                    <property name="dataRegionName" value="Benchmark_Region"/>
                     <property name="sqlSchema" value="PUBLIC"/>
-
-                    <!--<property name="evictionPolicy">-->
-                        <!--&lt;!&ndash; LRU eviction policy. &ndash;&gt;-->
-                        <!--<bean class="org.apache.ignite.cache.eviction.lru.LruEvictionPolicy">-->
-                            <!--&lt;!&ndash; Set the maximum cache size to 1 million (default is 100,000). &ndash;&gt;-->
-                            <!--<property name="maxSize" value="1000000"/>-->
-                        <!--</bean>-->
-                    <!--</property>-->
+                    <property name="cacheMode" value="PARTITIONED"/>
 
                     <property name="queryEntities">
                         <list>
@@ -157,14 +140,15 @@
                 <!-- Partitioned cache example configuration (Atomic mode). -->
                 <bean class="org.apache.ignite.configuration.CacheConfiguration">
                     <property name="name" value="RiskTradeMapOffheap"/>
+                    <property name="dataRegionName" value="Benchmark_Region"/>
                     <property name="sqlSchema" value="PUBLIC"/>
+                    <property name="cacheMode" value="PARTITIONED"/>
                     <!-- Enabling on-heap caching for this distributed cache. -->
                     <property name="onheapCacheEnabled" value="false"/>
                     <property name="atomicityMode" value="ATOMIC"/>
                     <property name="backups" value="1"/>
 
                 </bean>
-
 
             </list>
         </property>

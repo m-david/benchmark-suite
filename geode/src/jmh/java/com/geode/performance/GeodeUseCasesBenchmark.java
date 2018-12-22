@@ -116,9 +116,9 @@ public class GeodeUseCasesBenchmark
         riskTradeCache.putAll(trades);
     }
 
-    //region FIXTURE
+    //region fixture
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -128,7 +128,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
@@ -141,7 +141,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -149,7 +149,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -167,7 +167,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -193,7 +193,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
@@ -215,7 +215,7 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = ITERATIONS)
+    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
@@ -238,6 +238,7 @@ public class GeodeUseCasesBenchmark
         assert (results.size() > 0);
 
     }
+    //endregion
 
 
 }

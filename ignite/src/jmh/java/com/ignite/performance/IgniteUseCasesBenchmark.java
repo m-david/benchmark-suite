@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.ignite.performance.support.DummyData.getMeDummyRiskTrades;
+import static com.ignite.benchmark.common.DummyData.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
 
 @State(Scope.Benchmark)
@@ -35,11 +35,12 @@ import static common.BenchmarkConstants.*;
 public class IgniteUseCasesBenchmark
 {
     private static Logger logger = LoggerFactory.getLogger(IgniteUseCasesBenchmark.class);
-    private static final String ADDRESSES_PROPERTY_NAME = "benchmark.ignite.discovery.addresses";
-    private static final String PORTS_PROPERTY_NAME = "benchmark.ignite.discovery.ports";
-    private static final String HOSTS_DEFAULT = "127.0.0.1"; // comma separated
-    private static final String PORTS_DEFAULT = "47500..47509";
-    private static final String CLIENT_NAME = "BenchmarkClient-";
+
+//    private static final String ADDRESSES_PROPERTY_NAME = "benchmark.ignite.discovery.addresses";
+//    private static final String PORTS_PROPERTY_NAME = "benchmark.ignite.discovery.ports";
+//    private static final String HOSTS_DEFAULT = "127.0.0.1"; // comma separated
+//    private static final String PORTS_DEFAULT = "47500..47509";
+//    private static final String CLIENT_NAME = "BenchmarkClient-";
 
     @State(Scope.Thread)
     public static class InitReadCacheState

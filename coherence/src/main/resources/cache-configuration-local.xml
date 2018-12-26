@@ -21,7 +21,6 @@
 
             <!-- this is default -->
             <partition-count>257</partition-count>
-
             <backup-count>1</backup-count>
 
             <backup-storage>

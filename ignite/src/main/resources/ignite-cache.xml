@@ -193,6 +193,7 @@
 
         <property name="clientConnectorConfiguration">
             <bean class="org.apache.ignite.configuration.ClientConnectorConfiguration">
+
                 <property name="port" value="40100"/>
                 <property name="portRange" value="2"/>
             </bean>

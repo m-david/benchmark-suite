@@ -1,4 +1,4 @@
-package com.ignite.performance.support;
+package com.ignite.benchmark.common;
 
 import com.ignite.poc.model.RiskTrade;
 import common.domain.*;

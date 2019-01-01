@@ -32,7 +32,7 @@ JAVA_OPTS="-server -showversion \
 -Dgemfire.locator-port=10680 \
 -Dgemfire.jmx-manager-port=1099 \
 -Dgemfire.jmx-manager-http-port=8099 \
--Dgemfire.bind-address=10.212.1.116 \
+-Dgemfire.bind-address=localhost \
 -Dgemfire.name=$MEMBER_NAME \
 $MEM_OPTS $GC_OPTS"
 

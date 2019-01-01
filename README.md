@@ -12,7 +12,7 @@ GridGain | Apache Ignite | 2.7.0
 
 ## Building the Benchmark Applications
 
-To build and package the application, run:
+To build and package the application
 
 ### Coherence
 
@@ -54,32 +54,94 @@ tar xvf benchmark.hazelcast-1.0-SNAPSHOT.tar
 cd ./bin
 ```
 #### Start the cluster
-##### Running Locally...
+##### Locally...
 ```bash
 ./startHazelcastMemberLocal.sh &
 ./startHazelcastMemberLocal.sh &
 ```
-
-``` bash
-./ runHazelcastBenchmarkLocal.sh
-```
-
-##### Running On Server(s)...
+##### On Server(s)...
 ```bash
 ./startHazelcastMember.sh &
 ./startHazelcastMember.sh &
-```
-
-``` bash
-./ runHazelcastBenchmark.sh
 ```
 #### Run the Hazelcast benchmarks...
-##### Running Locally
+
+##### Locally
 ``` bash
 ./ runHazelcastBenchmarkLocal.sh
 ```
 
-##### Running On Server
+##### On Server
 ``` bash
 ./ runHazelcastBenchmark.sh
 ```
+### Coherence
+
+#### Extract the libraries
+
+```bash
+cd ./coherence/build/distributions
+tar xvf benchmark.coherence-1.0-SNAPSHOT.tar
+cd ./bin
+```
+#### Start the cluster
+##### Locally...
+```bash
+./startCoherenceMemberLocal.sh &
+./startCoherenceMemberLocal.sh &
+```
+
+##### On Server(s)...
+```bash
+./startCoherenceMember1.sh &
+./startCoherenceMember2.sh &
+```
+
+#### Run the Coherence benchmarks...
+##### Locally
+``` bash
+./ runCoherenceBenchmarkLocal.sh
+```
+
+##### On Server
+``` bash
+./ runCoherenceBenchmark.sh
+```
+
+### Hazelcast
+
+#### Extract the libraries
+
+```bash
+cd ./hazelcast/build/distributions
+tar xvf benchmark.hazelcast-1.0-SNAPSHOT.tar
+cd ./bin
+```
+#### Start the cluster
+##### Locally...
+```bash
+./startHazelcastMemberLocal.sh &
+./startHazelcastMemberLocal.sh &
+```
+##### On Server(s)...
+```bash
+./startHazelcastMember.sh &
+./startHazelcastMember.sh &
+```
+#### Run the Hazelcast benchmarks...
+
+##### Locally
+``` bash
+./ runHazelcastBenchmarkLocal.sh
+```
+
+##### On Server
+``` bash
+./ runHazelcastBenchmark.sh
+```
+
+
+
+
+
+

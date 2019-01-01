@@ -14,13 +14,17 @@
     <!--<region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>-->
 
     <region name="RiskTradeMapRead">
-        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true"/>
+        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
         <index name="riskTradeMapRead_book_idx" from-clause="/RiskTradeMapRead" expression="book"/>
         <index name="riskTradeMapRead_id_idx"   from-clause="/RiskTradeMapRead" expression="id" type="range"/>
     </region>
 
     <region name="RiskTradeMapOffheap">
-        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true"/>
+        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
         <!--<region-attributes refid="PARTITION_REDUNDANT" />-->
     </region>
 

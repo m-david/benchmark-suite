@@ -158,12 +158,13 @@ public class GeodeUseCasesBenchmark
         Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select * from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.settleCurrency = $1");
         SelectResults<RiskTrade> results = (SelectResults) query.execute(currency);
-
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
                 {
                     assert (trade.getSettleCurrency().equals(currency));
+                    counter.incrementAndGet();
                 });
-        assert (results.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for settleCurrency: %s", currency);
     }
 
     @Benchmark
@@ -184,12 +185,13 @@ public class GeodeUseCasesBenchmark
         String book = DUMMY_BOOK+id;
 
         SelectResults<RiskTrade> results = (SelectResults) query.execute(trader, currency, book);
-
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
                 {
                     assert (trade.getTraderName().equals(trader) && trade.getSettleCurrency().equals(currency) && trade.getBook().equals(book));
+                    counter.incrementAndGet();
                 });
-        assert (results.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for traderName: %s, settleCurrency: %s, book: %s", trader, currency, book);
     }
 
     @Benchmark
@@ -206,12 +208,15 @@ public class GeodeUseCasesBenchmark
         Pool pool = PoolManager.find(POOL_NAME);
         Query query = pool.getQueryService().newQuery(queryString);
         SelectResults<RiskTrade> results = (SelectResults) query.execute(book);
-
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
                 {
                     assert (trade.getBook().equals(book));
+                    counter.incrementAndGet();
                 });
-        assert (results.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for book: %s", book);
+
+
     }
 
     @Benchmark
@@ -230,12 +235,15 @@ public class GeodeUseCasesBenchmark
         Query query = pool.getQueryService().newQuery(queryString);
         SelectResults<RiskTrade> results = (SelectResults) query.execute(min, max);
 
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
             int id = trade.getId();
             assert (id >= min && id <= max);
+            counter.incrementAndGet();
         });
-        assert (results.size() > 0);
+
+        assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
 
     }
     //endregion

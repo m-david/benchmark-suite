@@ -5,18 +5,18 @@
     <caching-scheme-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapRead</cache-name>
-            <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
+            <scheme-name>BENCHMARK-Partitioned-Off-Heap-Small</scheme-name>
         </cache-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapOffheap</cache-name>
-            <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
+            <scheme-name>BENCHMARK-Partitioned-Off-Heap-Small</scheme-name>
         </cache-mapping>
     </caching-scheme-mapping>
 
     <caching-schemes>
 
         <distributed-scheme>
-            <scheme-name>BENCHMARK-Partitioned-Off-Heap</scheme-name>
+            <scheme-name>BENCHMARK-Partitioned-Off-Heap-Small</scheme-name>
             <service-name>BENCHMARK-PartitionedCacheOffHeapService</service-name>
 
             <!-- this is default -->
@@ -26,12 +26,102 @@
             <backup-storage>
                 <type>off-heap</type>
                 <initial-size>1MB</initial-size>
-                <maximum-size>256MB</maximum-size>
+                <maximum-size>50MB</maximum-size>
             </backup-storage>
+
+            <backing-map-scheme>
+                <partitioned>true</partitioned>
+                <external-scheme>
+                    <nio-memory-manager>
+                        <initial-size>1MB</initial-size>
+                        <maximum-size>50MB</maximum-size>
+                    </nio-memory-manager>
+                    <high-units>256</high-units>
+                    <unit-calculator>BINARY</unit-calculator>
+                    <unit-factor>1048576</unit-factor>
+                </external-scheme>
+            </backing-map-scheme>
 
             <autostart>true</autostart>
         </distributed-scheme>
 
+        <distributed-scheme>
+            <scheme-name>BENCHMARK-Partitioned-Off-Heap-Large</scheme-name>
+            <service-name>BENCHMARK-PartitionedCacheOffHeapService</service-name>
+
+            <!-- this is default -->
+            <partition-count>257</partition-count>
+            <backup-count>1</backup-count>
+
+            <backup-storage>
+                <type>off-heap</type>
+                <initial-size>1MB</initial-size>
+                <maximum-size>50MB</maximum-size>
+            </backup-storage>
+
+            <backing-map-scheme>
+                <partitioned>true</partitioned>
+                <external-scheme>
+                    <nio-memory-manager>
+                        <initial-size>1MB</initial-size>
+                        <maximum-size>50MB</maximum-size>
+                    </nio-memory-manager>
+                    <high-units>1536</high-units>
+                    <unit-calculator>BINARY</unit-calculator>
+                    <unit-factor>1048576</unit-factor>
+                </external-scheme>
+            </backing-map-scheme>
+
+            <autostart>true</autostart>
+        </distributed-scheme>
+
+        <distributed-scheme>
+            <scheme-name>large-scheme</scheme-name>
+            <service-name>LargeCacheService</service-name>
+            <partition-count>20981</partition-count>
+
+            <backup-storage>
+                <type>off-heap</type>
+                <initial-size>1MB</initial-size>
+                <maximum-size>50MB</maximum-size>
+            </backup-storage>
+
+            <backing-map-scheme>
+                <partitioned>true</partitioned>
+                <external-scheme>
+                    <nio-memory-manager>
+                        <initial-size>1MB</initial-size>
+                        <maximum-size>50MB</maximum-size>
+                    </nio-memory-manager>
+                    <high-units>20</high-units>
+                    <unit-calculator>BINARY</unit-calculator>
+                    <unit-factor>1073741824</unit-factor>
+
+                </external-scheme>
+            </backing-map-scheme>
+            <autostart>false</autostart>
+        </distributed-scheme>
+
+        <!--
+            EXPLANATION of large-scheme:
+            We have configured partition-count to 20,981, which will allow us to store 1 TB of data in the cache
+            while keeping the partition size down to 50 MB.  We have then used the partitioned element within the
+            backing map scheme definition to let Coherence know that it should use the partitioned backing map
+            implementation instead of the default one.  The external-scheme element is used to configure the
+            maximum size of the backing map as a whole, as well as the storage for each partition. Each partition
+            uses an NIO buffer with the initial size of 1 MB and a maximum size of 50 MB.  The backing map as a
+            whole is limited to 20 GB using a combination of high-units, unit-calculator, and unit-factor values.
+            Because we are storing serialized objects off-heap, we can use binary calculator to limit cache size
+            in bytes. However, the high-units setting is internally represented by a 32-bit integer, so the
+            highest value we could specify for it would be 2 GB.  In order allow for larger cache sizes while
+            preserving backwards compatibility, Coherence engineers decided not to widen high-units to 64 bits.
+            Instead, they introduced the unit-factor setting, which is nothing more than a multiplier for the
+            high-units value. In the preceding example, the unit-factor is set to 1 GB, which in combination
+            with the high-units setting of 20 limits cache size per node to 20 GB.  Finally, when using a
+            partitioned backing map to support very large caches off-heap, we cannot use the default,
+            on-heap backup storage. The backup storage is always managed per partition, so we had to
+            configure it to use off-heap buffers of the same size as primary storage buffers.
+        -->
         <proxy-scheme>
             <scheme-name>TCP-Extend</scheme-name>
             <service-name>BENCHMARK-ExtendTcpProxyService</service-name>

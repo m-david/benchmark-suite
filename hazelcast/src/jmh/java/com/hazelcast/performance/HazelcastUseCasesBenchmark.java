@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.hazelcast.performance.support.DummyData.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
@@ -116,16 +117,18 @@ public class HazelcastUseCasesBenchmark
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
-        String trader = DUMMY_TRADER+id;
-        Predicate predicate = new PredicateBuilder().getEntryObject().get("traderName").equal(trader);
+        String currency = DUMMY_CURRENCY+id;
+        Predicate predicate = new PredicateBuilder().getEntryObject().get("settleCurrency").equal(currency);
 
         Collection<RiskTrade> foundTrades = state.riskTradeReadCache.values(predicate);
+        AtomicInteger counter = new AtomicInteger(0);
         foundTrades.forEach(trade ->
         {
-            assert (trade.getTraderName().equals(trader));
+            assert (trade.getSettleCurrency().equals(currency));
+            counter.incrementAndGet();
         });
 
-        assert (foundTrades.size() > 0);
+        assert (counter.get() > 0) : "No trades found for settleCurrency: " + currency;
     }
 
     @Benchmark
@@ -144,15 +147,17 @@ public class HazelcastUseCasesBenchmark
                 e.get("book").equal(book)
         );
         Collection<RiskTrade> result = state.riskTradeReadCache.values(allFilters);
+        AtomicInteger counter = new AtomicInteger(0);
         result.forEach(trade -> {
             assert (
                     trade.getTraderName().equals(trader) &&
                     trade.getSettleCurrency().equals(currency) &&
                     trade.getBook().equals(book)
             );
+            counter.incrementAndGet();
         });
 
-        assert(result.size() > 0);
+        assert(counter.get() > 0)  : String.format("No trades found for traderName: %s, settleCurrency: %s, book: %s", trader, currency, book);
 
     }
 
@@ -164,11 +169,13 @@ public class HazelcastUseCasesBenchmark
         String book = DUMMY_BOOK+id;
         Predicate predicate = new PredicateBuilder().getEntryObject().get("book").equal(book);
         Collection<RiskTrade> result = state.riskTradeReadCache.values(predicate);
+        AtomicInteger counter = new AtomicInteger(0);
         result.forEach(trade -> {
             assert (trade.getId() == id);
+            counter.incrementAndGet();
         });
 
-        assert(result.size() > 0);
+        assert(counter.get() > 0) : String.format("No trades found for book: %s", book);
     }
 
     @Benchmark
@@ -179,11 +186,15 @@ public class HazelcastUseCasesBenchmark
         int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
         int max = min + range;
         Collection<RiskTrade> result = state.riskTradeReadCache.values(Predicates.between("id", min, max));
-        result.forEach(trade -> {
-            assert (trade.getId() >= min && trade.getId() <= max);
+        AtomicInteger counter = new AtomicInteger(0);
+        result.forEach(trade ->
+        {
+            int id = trade.getId();
+            assert (id >= min && id <= max);
+            counter.incrementAndGet();
         });
 
-        assert(result.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
     }
     //endregion
 

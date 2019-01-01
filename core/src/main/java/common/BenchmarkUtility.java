@@ -7,6 +7,6 @@ public class BenchmarkUtility
 
     public static int getRandomStartIndex(int bounds)
     {
-        return (int) ThreadLocalRandom.current().nextDouble() * bounds;
+        return (int) ThreadLocalRandom.current().nextDouble() * (bounds-1);
     }
 }

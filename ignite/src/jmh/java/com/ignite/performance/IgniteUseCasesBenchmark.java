@@ -139,19 +139,19 @@ public class IgniteUseCasesBenchmark
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
-        String trader = DUMMY_TRADER+id;
-        SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "traderName = ?");
-        query.setArgs(trader);
+        String currency = DUMMY_CURRENCY+id;
+        SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "settleCurrency = ?");
+        query.setArgs(currency);
         try (QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = state.riskTradeReadCache.query(query))
         {
             AtomicInteger counter = new AtomicInteger(0);
             cursor.forEach(entry ->
             {
-                assert (entry.getValue().getTraderName().equals(trader));
+                assert (entry.getValue().getSettleCurrency().equals(currency));
                 counter.incrementAndGet();
             });
 
-            assert (counter.get() > 0);
+            assert (counter.get() > 0) : String.format("No trades found for traderName: %s, settleCurrency: %s, book: %s", currency);
         }
     }
 
@@ -184,7 +184,7 @@ public class IgniteUseCasesBenchmark
                 counter.incrementAndGet();
             }
             );
-            assert (counter.get() > 0);
+            assert (counter.get() > 0) : String.format("No trades found for traderName: %s, settleCurrency: %s, book: %s", trader, currency, book);
         }
 
     }
@@ -206,7 +206,7 @@ public class IgniteUseCasesBenchmark
                         counter.incrementAndGet();
                     }
                 );
-            assert (counter.get() > 0);
+            assert (counter.get() > 0) : String.format("No trades found for book: %s", book);
         }
     }
 
@@ -229,7 +229,7 @@ public class IgniteUseCasesBenchmark
                         counter.incrementAndGet();
                     }
             );
-            assert (counter.get() > 0);
+            assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
 
         }
     }

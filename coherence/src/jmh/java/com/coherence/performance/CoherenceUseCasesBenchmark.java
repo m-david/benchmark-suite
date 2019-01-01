@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
 import static com.coherence.poc.serializer.RiskTradeSerializer.*;
@@ -106,12 +107,13 @@ public class CoherenceUseCasesBenchmark
         Filter filter = new EqualsFilter(valueExtractor, currency);
 
         Collection<RiskTrade> results = state.riskTradeReadCache.values(filter);
-
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
             assert (trade.getSettleCurrency().equals(currency));
+            counter.incrementAndGet();
         });
-        assert (results.size() > 0);
+        assert (counter.incrementAndGet() > 0) : String.format("No trades found for settleCurrency: %s", currency);
 
     }
 
@@ -137,11 +139,13 @@ public class CoherenceUseCasesBenchmark
                 new AllFilter(new Filter[]{currencyFilter, bookFilter, traderNameFilter});
 
         Collection<RiskTrade> results = state.riskTradeReadCache.values(allFilters);
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
             assert (trade.getTraderName().equals(trader) && trade.getSettleCurrency().equals(currency) && trade.getBook().equals(book));
+            counter.incrementAndGet();
         });
-        assert (results.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for traderName: %s, settleCurrency: %s, book: %s", trader, currency, book);
 
     }
 
@@ -159,12 +163,13 @@ public class CoherenceUseCasesBenchmark
         Filter bookFilter = new EqualsFilter(bookExtractor, book);
 
         Collection<RiskTrade> results = state.riskTradeReadCache.values(bookFilter);
-
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
             assert(trade.getBook().equals(book));
+            counter.incrementAndGet();
         });
-        assert (results.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for book: %s", book);
 
 
     }
@@ -181,12 +186,14 @@ public class CoherenceUseCasesBenchmark
         BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);
 
         Collection<RiskTrade> results = state.riskTradeReadCache.values(betweenFilter);
-
+        AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
-            assert(trade.getId() >= min && trade.getId() <= max);
+            int id = trade.getId();
+            assert (id >= min && id <= max);
+            counter.incrementAndGet();
         });
-        assert (results.size() > 0);
+        assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
 
     }
 

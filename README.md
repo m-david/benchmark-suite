@@ -25,13 +25,13 @@ The following operations are benchmarked:
 
 Description | Method Name
 --- |---
-1. Insert single Trade |  #insertTradeSingle
-2. Insert bulk Trades |  #insertTradeBulk
-3. Get single Trade |  #getTradeSingle
-4. One attribute trade query | #getTradeOneFilter
-5. Three attribute trade query | #getTradesThreeFilter
-6. One attribute (indexed) trade query | #getTradeIndexedFilter
-7. Get trades by id using range query | #getTradeIdRangeFilter 
+Insert single Trade |  #b01_insertTradeSingle
+Insert bulk Trades |  #b02_insertTradeBulk
+Get single Trade |  #b03_getTradeSingle
+One attribute trade query | #b04_getTradeOneFilter
+Three attribute trade query | #b05_getTradesThreeFilter
+One attribute (indexed) trade query | #b06_getTradeIndexedFilter
+Get trades by id using range query | #b07_getTradeIdRangeFilter 
 
 ## <a name="Build">Building the Benchmark Applications</a>
 

@@ -17,6 +17,22 @@ GridGain | Apache Ignite | 2.7.0
 ### Latest Benchmark Results
 </a>
 
+## <a name="test-strategy">Test Strategy</a>
+
+Since Ignite does not allow __On-Heap Only__, all the cached maps are configured for __Off-Heap__ only.  Benchmark is configured for Sampling for 100K iterations measured in __microseconds__.
+
+The following operations are benchmarked:
+
+Description | Method Name
+--- |---
+1. Insert single Trade |  #insertTradeSingle
+2. Insert bulk Trades |  #insertTradeBulk
+3. Get single Trade |  #getTradeSingle
+4. One attribute trade query | #getTradeOneFilter
+5. Three attribute trade query | #getTradesThreeFilter
+6. One attribute (indexed) trade query | #getTradeIndexedFilter
+7. Get trades by id using range query | #getTradeIdRangeFilter 
+
 ## <a name="Build">Building the Benchmark Applications</a>
 
 ### Build all

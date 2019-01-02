@@ -13,8 +13,9 @@ Pivotal | Apache Geode | 1.8.0
 Hazelcast | Hazelcast IMDG | 3.11.1
 GridGain | Apache Ignite | 2.7.0
 
-### <a href="https://docs.google.com/spreadsheets/d/1fe1SrNEbHsCBv3hgQkNDkVdI72kRvKmubvnW-c7xzZI">Latest Benchmark Results</a>
-
+<a href="https://docs.google.com/spreadsheets/d/1fe1SrNEbHsCBv3hgQkNDkVdI72kRvKmubvnW-c7xzZI">
+### Latest Benchmark Results
+</a>
 
 ## <a name="Build">Building the Benchmark Applications</a>
 
@@ -54,6 +55,14 @@ gradle -Dorg.gradle.daemon=false ignite:clean ignite:buildAll
 ## <a name="Deploy">Deploy the Applications</a>
 
 ### Hazelcast
+
+  * Pre-Install Requirements
+    * Enterprise HD License required.  If you do not have one, you will need to ask Sales for trial license.
+    * edit your .bash_profile to add the following ...
+
+```bash
+export HAZELCAST_LICENSE_KEY=XXXXXXXXXXXXXXXXXXXXXXXXX
+```
 
   * Extract the libraries
 

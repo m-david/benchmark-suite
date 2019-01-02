@@ -1,154 +1,210 @@
 # Benchmark-Suite
-Benchmarks of different IMDG Products.  Focused on Off-Heap capabilities.
+Benchmarks of different IMDG Products.  Focused on __Off-Heap__ capabilities.
 
 ## Product List
 
 Vendor | Product | Version
 --- |--- |---
 Oracle | Coherence | 12.2.1-3-0
-Pivotal | Apache Geode | 1.7.0
+Pivotal | Apache Geode | 1.8.0
 Hazelcast | Hazelcast IMDG | 3.11.1
 GridGain | Apache Ignite | 2.7.0
 
 ## Latest Benchmark Results
 
-[Benchmark results] (https://docs.google.com/spreadsheets/d/1fe1SrNEbHsCBv3hgQkNDkVdI72kRvKmubvnW-c7xzZI)
+<a href="https://docs.google.com/spreadsheets/d/1fe1SrNEbHsCBv3hgQkNDkVdI72kRvKmubvnW-c7xzZI">Benchmark results</a>
 
 ## Building the Benchmark Applications
 
-To build and package the application
+### Build all
 
-### Coherence
+```bash
+gradle -Dorg.gradle.daemon=false clean buildAll
+```
 
-#### Manual build
+### Build and package each individual application
+
+#### Coherence
+  
 ```bash
 gradle -Dorg.gradle.daemon=false coherence:clean coherence:buildAll
 ```
 
-### Geode
+#### Geode
 
-#### Manual build
 ```bash
 gradle -Dorg.gradle.daemon=false geode:clean geode:buildAll
 ```
 
-### Hazelcast
+#### Hazelcast
 
-#### Manual build
+
 ```bash
 gradle -Dorg.gradle.daemon=false hazelcast:clean hazelcast:buildAll
 ```
 
-### Ignite
+#### Ignite
 
-#### Manual build
 ```bash
 gradle -Dorg.gradle.daemon=false ignite:clean ignite:buildAll
 ```
 
-## Running the Benchmarks
+## Deploy the Applications
 
 ### Hazelcast
 
-#### Extract the libraries
+  * Extract the libraries
 
 ```bash
 cd ./hazelcast/build/distributions
 tar xvf benchmark.hazelcast-1.0-SNAPSHOT.tar
 cd ./bin
 ```
-#### Start the cluster
-##### Locally...
+
+Start the cluster
+  
+  * Locally...
+    
 ```bash
 ./startHazelcastMemberLocal.sh &
 ./startHazelcastMemberLocal.sh &
 ```
-##### On Server(s)...
+
+  * On Server(s)...
+    
 ```bash
 ./startHazelcastMember.sh &
 ./startHazelcastMember.sh &
-```
-#### Run the Hazelcast benchmarks...
-
-##### Locally
-``` bash
-./ runHazelcastBenchmarkLocal.sh
-```
-
-##### On Server
-``` bash
-./ runHazelcastBenchmark.sh
 ```
 ### Coherence
 
-#### Extract the libraries
+  * Extract the libraries
 
 ```bash
 cd ./coherence/build/distributions
 tar xvf benchmark.coherence-1.0-SNAPSHOT.tar
 cd ./bin
 ```
-#### Start the cluster
-##### Locally...
+Start the cluster
+
+  * Locally...
+  
 ```bash
 ./startCoherenceMemberLocal.sh &
 ./startCoherenceMemberLocal.sh &
 ```
 
-##### On Server(s)...
+  * On Server(s)...
+
 ```bash
 ./startCoherenceMember1.sh &
 ./startCoherenceMember2.sh &
 ```
 
-#### Run the Coherence benchmarks...
-##### Locally
-``` bash
-./ runCoherenceBenchmarkLocal.sh
-```
+### Geode
 
-##### On Server
-``` bash
-./ runCoherenceBenchmark.sh
-```
-
-### Hazelcast
-
-#### Extract the libraries
+  * Extract the libraries
 
 ```bash
-cd ./hazelcast/build/distributions
-tar xvf benchmark.hazelcast-1.0-SNAPSHOT.tar
+cd ./geode/build/distributions
+tar xvf benchmark.geode-1.0-SNAPSHOT.tar
 cd ./bin
 ```
-#### Start the cluster
-##### Locally...
-```bash
-./startHazelcastMemberLocal.sh &
-./startHazelcastMemberLocal.sh &
-```
-##### On Server(s)...
-```bash
-./startHazelcastMember.sh &
-./startHazelcastMember.sh &
-```
-#### Run the Hazelcast benchmarks...
 
-##### Locally
+Start the cluster
+
+  * Locally...
+  
+```bash
+./startMember1Local.sh &
+./startMember2Local.sh &
+```
+
+  * On Server(s)...
+```bash
+./startMember1.sh &
+./startMember2.sh &
+```
+
+### Ignite
+
+  * Extract the libraries
+
+```bash
+cd ./ignite/build/distributions
+tar xvf benchmark.ignite-1.0-SNAPSHOT.tar
+cd ./bin
+```
+
+Start the cluster
+
+  * Locally...
+  
+```bash
+./startIgniteMemberLocal.sh &
+./startIgniteMemberLocal.sh &
+```
+
+  * On Server(s)...
+```bash
+./startIgniteMember.sh &
+./startIgniteMember.sh &
+```
+
+## Running the Benchmarks
+
+#### Hazelcast
+
+  * Locally
 ``` bash
 ./ runHazelcastBenchmarkLocal.sh
 ```
 
-##### On Server
+  * On Server
 ``` bash
 ./ runHazelcastBenchmark.sh
 ```
 
+#### Coherence
 
+  * Locally
+  
+``` bash
+./ runCoherenceBenchmarkLocal.sh
+```
 
+  * On Server
+  
+``` bash
+./ runCoherenceBenchmark.sh
+```
+#### Geode
 
+  * Locally
+  
+``` bash
+./ runGeodeBenchmarkLocal.sh
+```
 
+  * On Server
+  
+``` bash
+./ runGeodeBenchmark.sh
+```
 
+#### Ignite
+
+  * Locally
+  
+``` bash
+./ runIgniteBenchmarkLocal.sh
+```
+
+  * On Server
+  
+``` bash
+./ runIgniteBenchmark.sh
+```
 
 
 

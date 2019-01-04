@@ -21,15 +21,15 @@
             <ports>0</ports>
         </outbound-ports>
         <join>
-            <multicast enabled="true"/>
-            <!--<tcp-ip enabled="true">-->
-                <!--<interface>localhost:5710</interface>-->
-                <!--<interface>localhost:5711</interface>-->
-                <!--<interface>localhost:5712</interface>-->
-            <!--</tcp-ip>-->
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <interface>localhost:5710</interface>
+                <interface>localhost:5711</interface>
+                <interface>localhost:5712</interface>
+            </tcp-ip>
         </join>
         <interfaces>
-            <!--<interface>localhost:571?</interface>-->
+            <interface>localhost:571?</interface>
         </interfaces>
     </network>
 

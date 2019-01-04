@@ -50,8 +50,6 @@ final public class RiskTradePortable extends RiskTrade implements Portable {
         // serialization of enum to string
         portableWriter.writeUTF("tradeSource", this.getTradeSource().toValue());
 
-        portableWriter.getRawDataOutput().writeObject(this.getProduct());
-
         portableWriter.writeLong("tradeDate", this.getTradeDate().getTime());
         portableWriter.writeLong("settleDate", this.getSettleDate().getTime());
         portableWriter.writeDouble("quantity", this.getQuantity());
@@ -86,6 +84,8 @@ final public class RiskTradePortable extends RiskTrade implements Portable {
 
         final ObjectDataOutput rawDataOutput = portableWriter.getRawDataOutput();
 
+        rawDataOutput.writeObject(this.getProduct());
+
         // portableWriter.writeMap(22, fees);
         writeMap(this.getFees(), rawDataOutput);
 
@@ -116,7 +116,6 @@ final public class RiskTradePortable extends RiskTrade implements Portable {
         this.ecnLinkId = portableReader.readUTF("ecnLinkId");
         // serialization of enum to string
         this.tradeSource = TradeSource.fromValue(portableReader.readUTF("tradeSource"));
-        this.product = portableReader.getRawDataInput().readObject();
 
         this.tradeDate = new Date(portableReader.readLong("tradeDate"));
         this.settleDate = new Date(portableReader.readLong("settleDate"));
@@ -152,6 +151,8 @@ final public class RiskTradePortable extends RiskTrade implements Portable {
 
         // TODO read maps
         final ObjectDataInput rawDataInput = portableReader.getRawDataInput();
+        this.product = rawDataInput.readObject();
+
         this.fees = new Hashtable(readMaps(rawDataInput));
         this.keywords = new Hashtable(readMaps(rawDataInput));
         this.transientKeywords = new Hashtable(readMaps(rawDataInput));

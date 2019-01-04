@@ -13,5 +13,24 @@ public abstract class RiskProduct implements Serializable {
 	private String securityDesc;
 
 	abstract ProductType getRiskProductType();
-	
+
+	public String getCusip()
+	{
+		return cusip;
+	}
+
+	public void setCusip(String cusip)
+	{
+		this.cusip = cusip;
+	}
+
+	public String getSecurityDesc()
+	{
+		return securityDesc;
+	}
+
+	public void setSecurityDesc(String securityDesc)
+	{
+		this.securityDesc = securityDesc;
+	}
 }

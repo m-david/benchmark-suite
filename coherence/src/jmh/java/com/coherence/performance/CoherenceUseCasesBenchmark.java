@@ -213,7 +213,7 @@ public class CoherenceUseCasesBenchmark
         ValueExtractor idExtractor = new PofExtractor(null, ID);
         BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);
 
-        ValueExtractor bookExtractor = new PofExtractor(null, ID);
+        ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
         EqualsFilter bookFilter = new EqualsFilter(bookExtractor, DUMMY_BOOK+bookId);
 
         AndFilter andFilter = new AndFilter(betweenFilter, bookFilter);

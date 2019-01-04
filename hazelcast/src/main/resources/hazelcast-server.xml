@@ -41,7 +41,8 @@
         <eviction-percentage>25</eviction-percentage>
         <indexes>
             <index ordered="true">id</index>
-            <index ordered="false">book</index>
+            <index ordered="true">book</index>
+            <index ordered="false">salesPerson</index>
         </indexes>
     </map>
 

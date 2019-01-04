@@ -39,7 +39,7 @@ JAVA_OPTS="\
 $MEM_OPTS $GC_OPTS"
 
 
-JMH_OPTS="-wi 1 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/coherence.$TODAY.$APP_PID.json -o $APP_HOME/results/coherence.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -t 5 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/coherence.$TODAY.$APP_PID.json -o $APP_HOME/results/coherence.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 JAVA_OPTS="$JAVA_OPTS $1 $2"
 

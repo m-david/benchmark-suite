@@ -14,27 +14,27 @@
     </group>
 
     <!-- Enable Management Center if needed -->
-    <management-center enabled="true">http://localhost:8080/hazelcast-mancenter</management-center>
+    <management-center enabled="false">http://localhost:8080/hazelcast-mancenter</management-center>
     <network>
         <port auto-increment="true" >5710</port>
         <outbound-ports>
             <ports>0</ports>
         </outbound-ports>
         <join>
-            <multicast enabled="false"/>
-            <tcp-ip enabled="true">
-                <interface>localhost:5710</interface>
-                <interface>localhost:5711</interface>
-                <interface>localhost:5712</interface>
-            </tcp-ip>
+            <multicast enabled="true"/>
+            <!--<tcp-ip enabled="true">-->
+                <!--<interface>localhost:5710</interface>-->
+                <!--<interface>localhost:5711</interface>-->
+                <!--<interface>localhost:5712</interface>-->
+            <!--</tcp-ip>-->
         </join>
         <interfaces>
-            <interface>localhost:571?</interface>
+            <!--<interface>localhost:571?</interface>-->
         </interfaces>
     </network>
 
     <map name="RiskTradeMapRead">
-        <in-memory-format>NATIVE</in-memory-format>
+        <in-memory-format>BINARY</in-memory-format>
         <async-backup-count>0</async-backup-count>
         <backup-count>1</backup-count>
         <eviction-policy>LRU</eviction-policy>
@@ -48,13 +48,13 @@
     </map>
 
     <cache name="RiskTradeMapOffheap">
-        <in-memory-format>NATIVE</in-memory-format>
+        <in-memory-format>BINARY</in-memory-format>
         <async-backup-count>0</async-backup-count>
         <backup-count>0</backup-count>
         <eviction max-size-policy="USED_NATIVE_MEMORY_PERCENTAGE" size="25"/>
     </cache>
 
-    <native-memory allocator-type="POOLED" enabled="true">
+    <native-memory allocator-type="POOLED" enabled="false">
         <size unit="MEGABYTES" value="512" />
         <metadata-space-percentage>25</metadata-space-percentage>
     </native-memory>

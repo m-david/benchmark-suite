@@ -18,12 +18,12 @@
         </encoder>
     </appender>
 
-    <logger name="com.hazelcast" level="DEBUG" additivity="false">
+    <logger name="com.hazelcast" level="INFO" additivity="false">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <logger name="org.apache" level="DEBUG" additivity="false">
+    <logger name="org.apache" level="INFO" additivity="false">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </logger>

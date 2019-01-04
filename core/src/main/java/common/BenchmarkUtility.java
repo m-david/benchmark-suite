@@ -9,4 +9,9 @@ public class BenchmarkUtility
     {
         return (int) ThreadLocalRandom.current().nextDouble() * (bounds-1);
     }
+
+    public static int getRandom(int origin, int bounds)
+    {
+        return ThreadLocalRandom.current().nextInt(origin, bounds);
+    }
 }

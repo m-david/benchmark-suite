@@ -33,7 +33,7 @@ dependencies {
 
 	compile project(':core')
 
-    compile( group: 'com.hazelcast', name: 'hazelcast-enterprise-all', version: "$HZ_VERSION" ) {
+    compile( group: 'com.hazelcast', name: 'hazelcast-all', version: "$HZ_VERSION" ) {
         transitive = false
     }
 

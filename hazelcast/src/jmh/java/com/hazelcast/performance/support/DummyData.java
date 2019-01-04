@@ -2,15 +2,17 @@ package com.hazelcast.performance.support;
 
 import common.domain.BuySell;
 import common.domain.Action;
+import common.domain.RiskBond;
+import common.domain.RiskTrade;
+import common.domain.TradeSource;
 import common.domain.TradeStatus;
-import com.hazelcast.poc.domain.portable.RiskBond;
-import com.hazelcast.poc.domain.portable.RiskTrade;
-import com.hazelcast.poc.domain.portable.TradeSource;
+
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static common.BenchmarkConstants.*;
 
@@ -23,18 +25,18 @@ import static common.BenchmarkConstants.*;
  */
 public class DummyData {
 
-    public static List<RiskTrade> getMeDummyRiskTrades() {
+    public static List<RiskTrade> getMeDummyRiskTrades(Supplier<RiskTrade> tradeSupplier) {
         List<RiskTrade> riskTrades = new ArrayList<RiskTrade>();
 
         for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++)
         {
-            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
+            riskTrades.add(riskTrade(tradeSupplier, i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
         }
         return riskTrades;
     }
 
-    public static RiskTrade riskTrade(int id, String book, String traderName, String settleCurrency) {
-        RiskTrade riskTrade = new RiskTrade();
+    public static RiskTrade riskTrade(Supplier<RiskTrade> tradeSupplier, int id, String book, String traderName, String settleCurrency) {
+        RiskTrade riskTrade = tradeSupplier.get();
         riskTrade.setAccrual(20);
         riskTrade.setAction(Action.DUMMY_RISK);
         riskTrade.setBook(book);

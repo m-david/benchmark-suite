@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hazelcast
+        xsi:schemaLocation="http://www.hazelcast.com/schema/config http://www.hazelcast.com/schema/config/hazelcast-config-3.10.xsd"
+        xmlns="http://www.hazelcast.com/schema/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <properties>
+        <property name="hazelcast.phone.home.enabled">false</property>
+        <property name="hazelcast.logging.type">slf4j</property>
+    </properties>
+    <group>
+        <name>benchmark</name>
+        <password>benchmark-pass</password>
+    </group>
+
+    <!-- Enable Management Center if needed -->
+    <management-center enabled="true">http://localhost:8080/hazelcast-mancenter</management-center>
+    <network>
+        <port auto-increment="true" >5710</port>
+        <outbound-ports>
+            <ports>0</ports>
+        </outbound-ports>
+        <join>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <interface>172.30.0.205:5710</interface>
+                <interface>172.30.0.44:5710</interface>
+            </tcp-ip>
+        </join>
+        <interfaces>
+            <interface>localhost:5710</interface>
+        </interfaces>
+    </network>
+
+    <map name="RiskTradeMapRead">
+        <in-memory-format>NATIVE</in-memory-format>
+        <async-backup-count>0</async-backup-count>
+        <backup-count>1</backup-count>
+        <eviction-policy>LRU</eviction-policy>
+        <max-size policy="PER_NODE">100000</max-size>
+        <eviction-percentage>25</eviction-percentage>
+        <indexes>
+            <index ordered="true">id</index>
+            <index ordered="true">book</index>
+            <index ordered="false">salesPerson</index>
+        </indexes>
+    </map>
+
+    <cache name="RiskTradeMapOffheap">
+        <in-memory-format>NATIVE</in-memory-format>
+        <async-backup-count>0</async-backup-count>
+        <backup-count>0</backup-count>
+        <eviction max-size-policy="USED_NATIVE_MEMORY_PERCENTAGE" size="80"/>
+    </cache>
+
+    <native-memory allocator-type="POOLED" enabled="true">
+        <size unit="MEGABYTES" value="4096" />
+        <metadata-space-percentage>25</metadata-space-percentage>
+    </native-memory>
+
+    <serialization>
+        <portable-factories>
+            <portable-factory factory-id="1">
+                com.hazelcast.poc.domain.portable.RiskTradePortableFactory
+            </portable-factory>
+        </portable-factories>
+    </serialization>
+</hazelcast>

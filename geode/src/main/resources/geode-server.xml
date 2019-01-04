@@ -17,8 +17,9 @@
         <region-attributes refid="PARTITION_REDUNDANT" off-heap="true">
             <partition-attributes redundant-copies="1"/>
         </region-attributes>
-        <index name="riskTradeMapRead_book_idx" from-clause="/RiskTradeMapRead" expression="book"/>
+        <index name="riskTradeMapRead_book_idx" from-clause="/RiskTradeMapRead" expression="book" type="range"/>
         <index name="riskTradeMapRead_id_idx"   from-clause="/RiskTradeMapRead" expression="id" type="range"/>
+        <index name="riskTradeMapRead_id_idx"   from-clause="/RiskTradeMapRead" expression="salesPerson"/>
     </region>
 
     <region name="RiskTradeMapOffheap">

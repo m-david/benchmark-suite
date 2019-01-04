@@ -113,6 +113,7 @@
                                         <entry key="book" value="java.lang.String"/>
                                         <entry key="traderName" value="java.lang.String"/>
                                         <entry key="settleCurrency" value="java.lang.String"/>
+                                        <entry key="salesPerson" value="java.lang.String"/>
                                     </map>
                                 </property>
                                 <property name="indexes">
@@ -122,6 +123,9 @@
                                         </bean>
                                         <bean class="org.apache.ignite.cache.QueryIndex">
                                             <constructor-arg value="id"/>
+                                        </bean>
+                                        <bean class="org.apache.ignite.cache.QueryIndex">
+                                            <constructor-arg value="salesPerson"/>
                                         </bean>
                                     </list>
                                 </property>

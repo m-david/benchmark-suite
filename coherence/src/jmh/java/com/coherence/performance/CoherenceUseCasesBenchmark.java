@@ -74,7 +74,7 @@ public class CoherenceUseCasesBenchmark
     }
 
     //region fixture
-//    @Benchmark
+    @Benchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
@@ -84,7 +84,7 @@ public class CoherenceUseCasesBenchmark
 
     } // 164 seconds for 100000
 
-//    @Benchmark
+    @Benchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {

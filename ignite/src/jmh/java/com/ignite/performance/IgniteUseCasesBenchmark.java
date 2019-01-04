@@ -108,7 +108,7 @@ public class IgniteUseCasesBenchmark
     }
 
     //region fixture
-//    @Benchmark
+    @Benchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
 //    @Warmup(iterations = 2)
     public void b01_InsertTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
@@ -118,7 +118,7 @@ public class IgniteUseCasesBenchmark
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
     }
 
-//    @Benchmark
+    @Benchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
 //    @Warmup(iterations = 2)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception

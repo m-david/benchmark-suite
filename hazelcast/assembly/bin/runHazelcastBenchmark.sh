@@ -17,7 +17,7 @@ $HAZELCAST_HOME/conf:\
 $HAZELCAST_HOME/jmh-lib/benchmark.hazelcast-1.0-SNAPSHOT-jmh.jar:\
 $HAZELCAST_HOME/lib/*"
 
-MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"
+MEM_OPTS="-Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="\
 -XX:+UseG1GC \
 -XX:+PrintGCDetails \

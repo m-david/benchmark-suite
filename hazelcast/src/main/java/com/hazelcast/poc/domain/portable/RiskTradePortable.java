@@ -11,6 +11,7 @@ import common.domain.BuySell;
 import common.domain.RiskTrade;
 import common.domain.TradeSource;
 import common.domain.TradeStatus;
+import lombok.Data;
 
 import java.io.IOException;
 import java.util.Date;
@@ -25,6 +26,7 @@ import java.util.Set;
  * A simple trade for Kraken Risk.
  */
 @SuppressWarnings("unchecked")
+@Data
 final public class RiskTradePortable extends RiskTrade implements Portable {
 
     public final static Integer RISK_TRADE_CLASS_ID = 1;

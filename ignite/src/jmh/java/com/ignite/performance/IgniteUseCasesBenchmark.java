@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.ignite.benchmark.common.DummyData.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
+import static common.BenchmarkUtility.getRandom;
+import static common.BenchmarkUtility.getRandomStartIndex;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -106,39 +108,39 @@ public class IgniteUseCasesBenchmark
     }
 
     //region fixture
-    @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+//    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
 //    @Warmup(iterations = 2)
     public void b01_InsertTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int index = getRandomStartIndex(state.riskTradeList.size());
         RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
     }
 
-    @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+//    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
 //    @Warmup(iterations = 2)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()- BATCH_SIZE);
+        int startIndex = getRandomStartIndex(state.riskTradeList.size()- BATCH_SIZE);
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int index = getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String currency = DUMMY_CURRENCY+id;
         SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "settleCurrency = ?");
         query.setArgs(currency);
@@ -156,10 +158,10 @@ public class IgniteUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -190,10 +192,10 @@ public class IgniteUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "book = ?");
         String book = DUMMY_BOOK+id;
         query.setArgs(book);
@@ -211,11 +213,11 @@ public class IgniteUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
-        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int min = getRandomStartIndex(state.riskTradeList.size()-range);
         int max = min + range;        SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "id >= ? and id <= ?");
         query.setArgs(Integer.valueOf(min), Integer.valueOf(max));
         try(QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = state.riskTradeReadCache.query(query))
@@ -233,6 +235,34 @@ public class IgniteUseCasesBenchmark
 
         }
     }
+
+    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
+    public void b08_GetTradeIdRangeAndBookFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;
+        int bookId = getRandom(min, max);
+        SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "id >= ? and id <= ? and book = ?");
+
+        query.setArgs(Integer.valueOf(min), Integer.valueOf(max), DUMMY_BOOK+bookId);
+        try(QueryCursor<Cache.Entry<Integer, RiskTrade>> cursor = state.riskTradeReadCache.query(query))
+        {
+            AtomicInteger counter = new AtomicInteger(0);
+            blackhole.consume(cursor);
+            cursor.forEach(e ->
+                    {
+                        int id = e.getValue().getId();
+                        assert (id >= min && id <= max);
+                        counter.incrementAndGet();
+                    }
+            );
+            assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
+
+        }
+    }
+
     //endregion
 
 

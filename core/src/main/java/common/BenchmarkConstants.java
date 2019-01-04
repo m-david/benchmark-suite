@@ -11,6 +11,7 @@ public class BenchmarkConstants
 {
     public static final int NUMBER_OF_TRADES_TO_PROCESS = Integer.valueOf(System.getProperty("benchmark.record.count", "100000"));
     public static final int ITERATIONS = 5;
+    public static final int CARDINALITY = 10000;
 
     public static final String TRADE_READ_MAP = "RiskTradeMapRead";
     public static final String TRADE_OFFHEAP_MAP = "RiskTradeMapOffheap";
@@ -21,5 +22,6 @@ public class BenchmarkConstants
     public static final String DUMMY_BOOK = "book-";
     public static final String DUMMY_CURRENCY = "USD-";
     public static final String DUMMY_TRADER = "trader-";
+    public static final String DUMMY_SALES = "salesPerson-";
 
 }

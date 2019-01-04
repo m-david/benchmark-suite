@@ -16,6 +16,7 @@ public class RiskTradeSerializer  implements PofSerializer  {
 	public static final int SETTLE_CURRENCY = 10;
 	public static final int BOOK = 11;
 	public static final int TRADER_NAME = 12;
+	public static final int SALES = 26;
 
 	public Object deserialize(PofReader in) 
 			   throws IOException 

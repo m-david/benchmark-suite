@@ -17,7 +17,7 @@ import static common.BenchmarkConstants.*;
  * @since 0.0.1
  */
 public class CoherenceBenchmarkHelper {
-        public static RiskTrade riskTrade(int id, String book, String traderName, String settleCurrency) {
+        public static RiskTrade riskTrade(int id, String book, String traderName, String settleCurrency, String salesPerson) {
             RiskTrade riskTrade = new RiskTrade();
             riskTrade.setAccrual(20);
             riskTrade.setAction(Action.DUMMY_RISK);
@@ -39,7 +39,7 @@ public class CoherenceBenchmarkHelper {
             //riskTradeCache.setProduct(new RiskBond());
             riskTrade.setProductFamily("productFamily");
             riskTrade.setQuantity(10);
-            riskTrade.setSalesPerson("salesPerson");
+            riskTrade.setSalesPerson(salesPerson);
             riskTrade.setSettleCurrency(settleCurrency);
 
             riskTrade.setSettleDate(new Date());
@@ -57,7 +57,7 @@ public class CoherenceBenchmarkHelper {
     public static List<RiskTrade> getMeDummyRiskTrades() {
         List<RiskTrade> riskTrades = new ArrayList<RiskTrade>();
         for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++) {
-            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
+            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i, DUMMY_SALES+(i%CARDINALITY)));
         }
         return riskTrades;
     }

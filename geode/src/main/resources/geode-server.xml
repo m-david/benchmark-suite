@@ -19,7 +19,7 @@
         </region-attributes>
         <index name="riskTradeMapRead_book_idx" from-clause="/RiskTradeMapRead" expression="book" type="range"/>
         <index name="riskTradeMapRead_id_idx"   from-clause="/RiskTradeMapRead" expression="id" type="range"/>
-        <index name="riskTradeMapRead_id_idx"   from-clause="/RiskTradeMapRead" expression="salesPerson"/>
+        <index name="riskTradeMapRead_sales_idx"   from-clause="/RiskTradeMapRead" expression="salesPerson"/>
     </region>
 
     <region name="RiskTradeMapOffheap">

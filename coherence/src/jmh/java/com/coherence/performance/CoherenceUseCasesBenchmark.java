@@ -6,6 +6,7 @@ import com.tangosol.util.Filter;
 import com.tangosol.util.ValueExtractor;
 import com.tangosol.util.extractor.PofExtractor;
 import com.tangosol.util.filter.AllFilter;
+import com.tangosol.util.filter.AndFilter;
 import com.tangosol.util.filter.BetweenFilter;
 import com.tangosol.util.filter.EqualsFilter;
 import common.BenchmarkUtility;
@@ -27,6 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
 import static com.coherence.poc.serializer.RiskTradeSerializer.*;
 import static common.BenchmarkConstants.*;
+import static common.BenchmarkUtility.getRandom;
+import static common.BenchmarkUtility.getRandomStartIndex;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -46,8 +49,6 @@ public class CoherenceUseCasesBenchmark
 
         private List<RiskTrade> riskTradeList;
 
-        private ThreadLocalRandom randomizer = ThreadLocalRandom.current();
-
         @Setup(Level.Trial)
         public void before()
         {
@@ -60,6 +61,9 @@ public class CoherenceUseCasesBenchmark
             riskTradeReadCache.addIndex(bookExtractor, false, null);
             ValueExtractor idExtractor = new PofExtractor(null, ID);
             riskTradeReadCache.addIndex(idExtractor, true, null);
+            ValueExtractor salesExtractor = new PofExtractor(null, SALES);
+            riskTradeReadCache.addIndex(salesExtractor, false, null);
+
         }
 
         @TearDown(Level.Trial)
@@ -70,37 +74,37 @@ public class CoherenceUseCasesBenchmark
     }
 
     //region fixture
-    @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+//    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int index = getRandomStartIndex(state.riskTradeList.size());
         RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     } // 164 seconds for 100000
 
-    @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+//    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
+        int startIndex = getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
         putAllRiskTradesInBulk(blackhole, state.riskTradeOffHeapCache, state.riskTradeList, startIndex, BATCH_SIZE);
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int index = getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String currency = DUMMY_CURRENCY+id;
 
         ValueExtractor valueExtractor = new PofExtractor(null, SETTLE_CURRENCY);
@@ -118,10 +122,10 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -150,13 +154,13 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     /**
      * Note:  Indexes are only available in Coherence Enterprise Edition and higher
      */
     public void b06_GetTradeIndexedFilter(InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String book = DUMMY_BOOK+id;
 
         ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
@@ -175,11 +179,11 @@ public class CoherenceUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
-        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int min = getRandomStartIndex(state.riskTradeList.size()-range);
         int max = min + range;
         ValueExtractor idExtractor = new PofExtractor(null, ID);
 
@@ -196,6 +200,36 @@ public class CoherenceUseCasesBenchmark
         assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
 
     }
+
+    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
+    public void b08_GetTradeIdRangeAndBookFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;
+        int bookId = getRandom(min, max);
+
+        ValueExtractor idExtractor = new PofExtractor(null, ID);
+        BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);
+
+        ValueExtractor bookExtractor = new PofExtractor(null, ID);
+        EqualsFilter bookFilter = new EqualsFilter(bookExtractor, DUMMY_BOOK+bookId);
+
+        AndFilter andFilter = new AndFilter(betweenFilter, bookFilter);
+
+        Collection<RiskTrade> results = state.riskTradeReadCache.values(andFilter);
+        AtomicInteger counter = new AtomicInteger(0);
+        results.forEach(trade ->
+        {
+            int id = trade.getId();
+            assert (id >= min && id <= max);
+            counter.incrementAndGet();
+        });
+        assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
+
+    }
+
 
         //endregion
 

@@ -1,7 +1,6 @@
 package com.geode.performance;
 
 import com.geode.domain.serializable.RiskTrade;
-import common.BenchmarkUtility;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -25,9 +24,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.geode.benchmark.common.GeodeBenchmarkHelper.fetchAllRecordsOneByOne;
 import static com.geode.performance.support.DummyData.getMeDummyRiskTrades;
 import static common.BenchmarkConstants.*;
+import static common.BenchmarkUtility.getRandom;
+import static common.BenchmarkUtility.getRandomStartIndex;
 
 /**
  * @author mdavid
@@ -117,21 +117,21 @@ public class GeodeUseCasesBenchmark
     }
 
     //region fixture
-    @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+//    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b01_InsertTradesSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int index = getRandomStartIndex(state.riskTradeList.size());
         RiskTrade riskTrade = state.riskTradeList.get(index);
         state.riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
 
     }
 
-    @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+//    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b02_InsertTradesBulk(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int startIndex = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
+        int startIndex = getRandomStartIndex(state.riskTradeList.size() - BATCH_SIZE);
         putAllRiskTradesInBulk(
                 blackhole,
                 state.riskTradeOffHeapCache,
@@ -141,18 +141,18 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b03_GetTradeSingle(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int index = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int index = getRandomStartIndex(state.riskTradeList.size());
         blackhole.consume(state.riskTradeReadCache.get(state.riskTradeList.get(index).getId()));
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String currency = DUMMY_CURRENCY+id;
 
         Query query = state.clientCache.getQueryService(POOL_NAME).newQuery("select * from " + state.riskTradeReadCache.getFullPath() +
@@ -168,10 +168,10 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String queryString = "select * from " + state.riskTradeReadCache.getFullPath() +
                 " e where e.traderName = $1" +
                 " and e.settleCurrency = $2" +
@@ -195,10 +195,10 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
-        int id = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size());
+        int id = getRandomStartIndex(state.riskTradeList.size());
         String book = DUMMY_BOOK+id;
         String queryString =
                 "select * from " +
@@ -220,11 +220,11 @@ public class GeodeUseCasesBenchmark
     }
 
     @Benchmark
-    @Measurement(iterations = 100000, timeUnit = TimeUnit.MICROSECONDS)
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
     {
         int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
-        int min = BenchmarkUtility.getRandomStartIndex(state.riskTradeList.size()-range);
+        int min = getRandomStartIndex(state.riskTradeList.size()-range);
         int max = min + range;
         String queryString =
                 "select * from " +
@@ -246,6 +246,36 @@ public class GeodeUseCasesBenchmark
         assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
 
     }
+
+    @Benchmark
+    @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
+    public void b08_GetTradeIdRangeAndBookFilter(Blackhole blackhole, InitReadCacheState state) throws Exception
+    {
+        int range = (int) (state.riskTradeList.size() * RANGE_PERCENT);
+        int min = getRandomStartIndex(state.riskTradeList.size()-range);
+        int max = min + range;
+        int bookId = getRandom(min, max);
+        String queryString =
+                "select * from " +
+                        state.riskTradeReadCache.getFullPath() +
+                        " e where e.id >= $1 and e.id <= $2 and e.book = $3";
+
+        Pool pool = PoolManager.find(POOL_NAME);
+        Query query = pool.getQueryService().newQuery(queryString);
+        SelectResults<RiskTrade> results = (SelectResults) query.execute(min, max, DUMMY_BOOK+bookId);
+
+        AtomicInteger counter = new AtomicInteger(0);
+        results.forEach(trade ->
+        {
+            int id = trade.getId();
+            assert (id >= min && id <= max);
+            counter.incrementAndGet();
+        });
+
+        assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
+
+    }
+
     //endregion
 
 

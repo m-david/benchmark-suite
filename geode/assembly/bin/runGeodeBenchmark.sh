@@ -39,7 +39,7 @@ JAVA_OPTS="-server -showversion \
 -Dbenchmark.range.percent=0.05 \
 $MEM_OPTS $GC_OPTS"
 
-JMH_OPTS="-wi 1 -t 5 -i 1 -f 2 -gc true  -rf json -rff $APP_HOME/results/geode.$TODAY.$APP_PID.json -o $APP_HOME/results/geode.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -t 1 -i 1 -f 1 -gc true  -rf json -rff $APP_HOME/results/geode.$TODAY.$APP_PID.json -o $APP_HOME/results/geode.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH org.openjdk.jmh.Main GeodeUseCasesBenchmark $JMH_OPTS"
 

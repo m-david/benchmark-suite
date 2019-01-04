@@ -27,12 +27,12 @@ public class DummyData
     public static List<RiskTrade> getMeDummyRiskTrades() {
         List<RiskTrade> riskTrades = new ArrayList<RiskTrade>();
         for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++) {
-            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
+            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i, DUMMY_SALES+(i%CARDINALITY)));
         }
         return riskTrades;
     }
 
-    public static RiskTrade riskTrade(int id, String book, String traderName, String settleCurrency) {
+    public static RiskTrade riskTrade(int id, String book, String traderName, String settleCurrency, String salesPerson) {
         RiskTrade riskTrade = new RiskTrade();
         riskTrade.setAccrual(20);
         riskTrade.setAction(Action.DUMMY_RISK);
@@ -54,7 +54,7 @@ public class DummyData
         riskTrade.setProduct(new RiskBond());
         riskTrade.setProductFamily("productFamily");
         riskTrade.setQuantity(10);
-        riskTrade.setSalesPerson("salesPerson");
+        riskTrade.setSalesPerson(salesPerson);
         riskTrade.setSettleCurrency(settleCurrency);
 
         riskTrade.setSettleDate(new Date());

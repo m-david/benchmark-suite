@@ -18,12 +18,12 @@ public class DummyData
 
         for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++)
         {
-            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
+            riskTrades.add(riskTrade(i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i, DUMMY_SALES+(i%CARDINALITY)));
         }
         return riskTrades;
     }
 
-    public static RiskTrade riskTrade(int id, String book, String trader, String currency) {
+    public static RiskTrade riskTrade(int id, String book, String trader, String currency, String salesPerson) {
         RiskTrade riskTrade = new RiskTrade();
         riskTrade.setAccrual(20);
         riskTrade.setAction(Action.DUMMY_RISK);
@@ -45,7 +45,7 @@ public class DummyData
         riskTrade.setProduct(new RiskBond());
         riskTrade.setProductFamily("productFamily");
         riskTrade.setQuantity(10);
-        riskTrade.setSalesPerson("salesPerson");
+        riskTrade.setSalesPerson(salesPerson);
 
 //        if ((id % 2) == 0) {
 //            riskTrade.setSettleCurrency("USD");

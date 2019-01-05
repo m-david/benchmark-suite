@@ -8,12 +8,7 @@ import com.hazelcast.simulator.worker.loadsupport.MapStreamer;
 import com.hazelcast.simulator.worker.loadsupport.MapStreamerFactory;
 import common.domain.RiskTrade;
 import org.junit.Test;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Level;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -32,16 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static com.hazelcast.performance.support.DummyData.getMeDummyRiskTrades;
-import static com.hazelcast.query.Predicates.and;
-import static com.hazelcast.query.Predicates.between;
-import static com.hazelcast.query.Predicates.equal;
-import static common.BenchmarkConstants.BATCH_SIZE;
-import static common.BenchmarkConstants.DUMMY_BOOK;
-import static common.BenchmarkConstants.DUMMY_CURRENCY;
-import static common.BenchmarkConstants.DUMMY_TRADER;
-import static common.BenchmarkConstants.RANGE_PERCENT;
-import static common.BenchmarkConstants.TRADE_OFFHEAP_MAP;
-import static common.BenchmarkConstants.TRADE_READ_MAP;
+import static com.hazelcast.query.Predicates.*;
+import static common.BenchmarkConstants.*;
 import static common.BenchmarkUtility.getRandom;
 import static common.BenchmarkUtility.getRandomStartIndex;
 
@@ -102,15 +89,17 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
     //region fixture
     @Benchmark
     public void b01_InsertTradeSingle() {
-        int index = getRandomStartIndex(riskTradeList.size());
-        RiskTrade riskTrade = riskTradeList.get(index);
-        riskTradeOffHeapCache.set(riskTrade.getId(), riskTrade);
+        riskTradeList.forEach(riskTrade -> riskTradeOffHeapCache.set(riskTrade.getId(), riskTrade));
     }
 
     @Benchmark
-    public void b02_InsertTradesBulk(Blackhole blackhole) {
-        int startIndex = getRandomStartIndex(riskTradeList.size() - BATCH_SIZE);
-        putAllRiskTradesInBulk(blackhole, riskTradeOffHeapCache, riskTradeList, startIndex, BATCH_SIZE);
+    public void b02_InsertTradesBulk()
+    {
+        for(int i = 0; i < riskTradeList.size();)
+        {
+            putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, i, BATCH_SIZE);
+            i = i + BATCH_SIZE;
+        }
     }
 
     @Benchmark
@@ -223,9 +212,10 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
         }
     }
 
-    private static void putAllRiskTradesInBulk(Blackhole blackhole, Map<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize) {
+    private static void putAllRiskTradesInBulk(Map<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize) {
         Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-        for (int i = startIndex; i < batchSize && i < riskTradeList.size(); i++) {
+        int limit = Math.min(riskTradeList.size(), startIndex+batchSize);
+        for (int i = startIndex; i < limit; i++) {
             RiskTrade riskTrade = riskTradeList.get(i);
             trades.put(riskTrade.getId(), riskTrade);
         }

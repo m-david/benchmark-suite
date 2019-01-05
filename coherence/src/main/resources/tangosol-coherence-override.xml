@@ -16,6 +16,7 @@
                 <!--</socket-address>-->
             </well-known-addresses>
             <address system-property="tangosol.coherence.localhost">localhost</address>
+            <port system-property="tangosol.coherence.port">9090</port>
             <port-auto-adjust system-property="tangosol.coherence.localport.adjust">true</port-auto-adjust>
 
         </unicast-listener>

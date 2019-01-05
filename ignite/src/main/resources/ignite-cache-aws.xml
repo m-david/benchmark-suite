@@ -73,7 +73,7 @@
 
                         <bean class="org.apache.ignite.configuration.DataRegionConfiguration">
                             <property name="name" value="Benchmark_Region"/>
-                            <!-- Memory region of 2 GB initial/max size. -->
+                            <!-- Memory region of 4 GB initial/max size. -->
                             <property name="initialSize"    value="#{4L * 1024 * 1024 * 1024}"/>
                             <property name="maxSize"        value="#{4L * 1024 * 1024 * 1024}"/>
                             <!-- Enabling eviction for this memory region -->

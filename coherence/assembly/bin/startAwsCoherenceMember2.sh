@@ -14,7 +14,7 @@ $APP_HOME/conf:\
 $APP_HOME/benchmark.coherence-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*
 
-MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
+MEM_OPTS="-Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/coherence-gc.log"
 JAVA_OPTS="\
 -server -Djava.net.preferIPv4Stack=true -showversion \
@@ -24,6 +24,11 @@ JAVA_OPTS="\
 -Dtangosol.coherence.management=local-only
 -Dtangosol.coherence.override=tangosol-coherence-override.xml \
 -Dtangosol.coherence.extend.host=172.30.0.44 \
+-Dbenchmark.off-heap.scheme.name=BENCHMARK-Partitioned-Off-Heap-Large \
+-Dtangosol.coherence.wka=172.30.0.205 \
+-Dtangosol.coherence.wka.port=9090 \
+-Dtangosol.coherence.localhost=172.30.0.44 \
+-Dbenchmark.off-heap-large.auto-start=true \
 $MEM_OPTS \
 $GC_OPTS"
 

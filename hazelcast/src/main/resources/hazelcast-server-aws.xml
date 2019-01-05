@@ -36,9 +36,6 @@
         <in-memory-format>NATIVE</in-memory-format>
         <async-backup-count>0</async-backup-count>
         <backup-count>1</backup-count>
-        <eviction-policy>LRU</eviction-policy>
-        <max-size policy="PER_NODE">100000</max-size>
-        <eviction-percentage>25</eviction-percentage>
         <indexes>
             <index ordered="true">id</index>
             <index ordered="true">book</index>
@@ -46,15 +43,14 @@
         </indexes>
     </map>
 
-    <cache name="RiskTradeMapOffheap">
+    <map name="RiskTradeMapOffheap">
         <in-memory-format>NATIVE</in-memory-format>
         <async-backup-count>0</async-backup-count>
-        <backup-count>0</backup-count>
-        <eviction max-size-policy="USED_NATIVE_MEMORY_PERCENTAGE" size="80"/>
-    </cache>
+        <backup-count>1</backup-count>
+    </map>
 
     <native-memory allocator-type="POOLED" enabled="true">
-        <size unit="MEGABYTES" value="4096" />
+        <size unit="GIGABYTES" value="8" />
         <metadata-space-percentage>25</metadata-space-percentage>
     </native-memory>
 

@@ -69,10 +69,19 @@ public class CoherenceUseCasesBenchmark
 
     //region fixture
     @Benchmark
-    public void b01_InsertTradesSingle(Blackhole blackhole) throws Exception
+    public void b01_InsertTradesSingle() throws Exception
     {
-        riskTradeList.forEach(riskTrade -> riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade));
-    } // 164 seconds for 100000
+        AtomicInteger counter = new AtomicInteger(0);
+        riskTradeList.forEach(riskTrade ->
+        {
+            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
+            if(counter.incrementAndGet() % BATCH_SIZE == 0)
+            {
+                logger.info(String.format("Persisted [%d] records.", counter.get()));
+            }
+
+        });
+    }
 
     @Benchmark
     public void b02_InsertTradesBulk(Blackhole blackhole) throws Exception
@@ -81,6 +90,7 @@ public class CoherenceUseCasesBenchmark
         {
             putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, i, BATCH_SIZE);
             i = i + BATCH_SIZE;
+            logger.info(String.format("Persisted [%d] records.", i));
         }
     }
 

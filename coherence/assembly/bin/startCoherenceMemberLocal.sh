@@ -18,12 +18,17 @@ MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/coherence-gc.log"
 JAVA_OPTS="\
 -server -Djava.net.preferIPv4Stack=true -showversion \
--Dtangosol.coherence.cacheconfig=cache-configuration-local.xml \
+-Dtangosol.coherence.cacheconfig=cache-configuration.xml \
 -Dtangosol.pof.enabled=true \
 -Dtangosol.pof.config=my-custom-pof-config.xml \
 -Dtangosol.coherence.management=local-only
 -Dtangosol.coherence.override=tangosol-coherence-override.xml \
 -Dtangosol.coherence.extend.host=127.0.0.1 \
+-Dbenchmark.off-heap.scheme.name=BENCHMARK-Partitioned-Off-Heap-Small \
+-Dtangosol.coherence.wka=127.0.0.1 \
+-Dtangosol.coherence.wka.port=9090 \
+-Dtangosol.coherence.localhost=127.0.0.1 \
+-Dbenchmark.off-heap-large.auto-start=false \
 $MEM_OPTS \
 $GC_OPTS"
 

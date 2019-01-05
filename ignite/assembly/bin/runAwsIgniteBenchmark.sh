@@ -34,7 +34,7 @@ fi
 JAVA_OPTS="-server -showversion \
 -Dbenchmark.ignite.addresses=172.30.0.205:40100 \
 -DIGNITE_QUIET=false \
--Dbenchmark.record.count=1000000 \
+-Dbenchmark.record.count=100000 \
 -Dbenchmark.batch.size=5000 \
 -Dbenchmark.range.percent=0.05 \
 $MEM_OPTS \

@@ -35,7 +35,7 @@ JAVA_OPTS="-server -showversion \
 -Dhazelcast.client.config=$HAZELCAST_HOME/conf/hazelcast-client-aws.xml \
 -Dhazelcast.system.log.enabled=true \
 -Dbenchmark.useAsyncMapStreamer=$HZ_USE_ASYNC_MAP_STREAMER \
--Dbenchmark.record.count=1000000 \
+-Dbenchmark.record.count=100000 \
 -Dbenchmark.batch.size=5000 \
 -Dbenchmark.range.percent=0.05 \
 $MEM_OPTS \

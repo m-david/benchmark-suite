@@ -99,7 +99,15 @@ public class IgniteUseCasesBenchmark
     @Benchmark
     public void b01_InsertTradeSingle(Blackhole blackhole) throws Exception
     {
-        riskTradeList.forEach(riskTrade -> riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade));
+        AtomicInteger counter = new AtomicInteger(0);
+        riskTradeList.forEach(riskTrade ->
+        {
+            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
+            if(counter.incrementAndGet() % BATCH_SIZE == 0)
+            {
+                logger.info(String.format("Persisted [%d] records.", counter.get()));
+            }
+        });
     }
 
     @Benchmark
@@ -109,6 +117,7 @@ public class IgniteUseCasesBenchmark
         {
             putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, i, BATCH_SIZE);
             i = i + BATCH_SIZE;
+            logger.info(String.format("Persisted [%d] records.", i));
         }
 
     }

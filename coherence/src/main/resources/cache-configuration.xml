@@ -5,11 +5,11 @@
     <caching-scheme-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapRead</cache-name>
-            <scheme-name>BENCHMARK-Partitioned-Off-Heap-Large</scheme-name>
+            <scheme-name system-property="benchmark.off-heap.scheme.name">BENCHMARK-Partitioned-Off-Heap-Small</scheme-name>
         </cache-mapping>
         <cache-mapping>
             <cache-name>RiskTradeMapOffheap</cache-name>
-            <scheme-name>BENCHMARK-Partitioned-Off-Heap-Large</scheme-name>
+            <scheme-name system-property="benchmark.off-heap.scheme.name">BENCHMARK-Partitioned-Off-Heap-Small</scheme-name>
         </cache-mapping>
     </caching-scheme-mapping>
 
@@ -17,10 +17,9 @@
 
         <distributed-scheme>
             <scheme-name>BENCHMARK-Partitioned-Off-Heap-Small</scheme-name>
-            <service-name>BENCHMARK-PartitionedCacheOffHeapService</service-name>
+            <service-name>BENCHMARK-PartitionedCacheSmallOffHeapService</service-name>
 
-            <!-- this is default -->
-            <partition-count>257</partition-count>
+            <partition-count>257</partition-count> <!-- this is default -->
             <backup-count>1</backup-count>
 
             <backup-storage>
@@ -47,9 +46,7 @@
 
         <distributed-scheme>
             <scheme-name>BENCHMARK-Partitioned-Off-Heap-Large</scheme-name>
-            <service-name>BENCHMARK-PartitionedCacheOffHeapService</service-name>
-
-            <!-- this is default -->
+            <service-name>BENCHMARK-PartitionedCacheLargeOffHeapService</service-name>
             <partition-count>257</partition-count>
             <backup-count>1</backup-count>
 
@@ -66,13 +63,21 @@
                         <initial-size>1MB</initial-size>
                         <maximum-size>50MB</maximum-size>
                     </nio-memory-manager>
-                    <high-units>728</high-units>
+                    <high-units>8192</high-units>
                     <unit-calculator>BINARY</unit-calculator>
                     <unit-factor>1048576</unit-factor>
                 </external-scheme>
             </backing-map-scheme>
 
-            <autostart>true</autostart>
+            <!--
+                EXPLANATION of Off-Heap-Large:
+                Partition count set to 257, which allows us to store 1.5GB of data in cache
+                while keeping partition size down to 5MB.  The backing map as a whole
+                is limited to 1.5GB per node.  Since backup count is set to 1, available space is
+                only half, therefore, 750MB per node for each store.
+            -->
+
+            <autostart system-property="benchmark.off-heap-large.auto-start">false</autostart>
         </distributed-scheme>
 
         <distributed-scheme>
@@ -135,8 +140,8 @@
                         <port system-property="tangosol.coherence.extend.port">9090</port>
                         <port-auto-adjust system-property="tangosol.coherence.localport.adjust">true</port-auto-adjust>
                     </local-address>
-
                     <reuse-address>true</reuse-address>
+                    <suspect-protocol-enabled>true</suspect-protocol-enabled>
                 </tcp-acceptor>
 
                 <serializer>

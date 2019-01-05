@@ -24,6 +24,11 @@ JAVA_OPTS="\
 -Dtangosol.coherence.management=local-only
 -Dtangosol.coherence.override=tangosol-coherence-override.xml \
 -Dtangosol.coherence.extend.host=10.212.1.118 \
+-Dbenchmark.off-heap.scheme.name=BENCHMARK-Partitioned-Off-Heap-Large \
+-Dtangosol.coherence.wka=10.212.1.117 \
+-Dtangosol.coherence.wka.port=9090 \
+-Dtangosol.coherence.localhost=10.212.1.118 \
+-Dbenchmark.off-heap-large.auto-start=true \
 $MEM_OPTS \
 $GC_OPTS"
 

@@ -12,7 +12,7 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
+MEM_OPTS="-Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/hazelcast-gc.$TODAY.$APP_PID.log"
 JAVA_OPTS="-server -showversion \
 -Dhazelcast.config=$HAZELCAST_HOME/conf/hazelcast-server-aws.xml \

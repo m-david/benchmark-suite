@@ -7,6 +7,7 @@
     <properties>
         <property name="hazelcast.phone.home.enabled">false</property>
         <property name="hazelcast.logging.type">slf4j</property>
+        <property name="hazelcast.index.copy.behavior">NEVER</property>
     </properties>
     <group>
         <name>benchmark</name>

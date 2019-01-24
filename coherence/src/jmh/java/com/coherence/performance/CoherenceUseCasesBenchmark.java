@@ -71,14 +71,14 @@ public class CoherenceUseCasesBenchmark
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
-        AtomicInteger counter = new AtomicInteger(0);
+//        AtomicInteger counter = new AtomicInteger(0);
         riskTradeList.forEach(riskTrade ->
         {
             riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-            if(counter.incrementAndGet() % BATCH_SIZE == 0)
-            {
-                logger.info(String.format("Persisted [%d] records.", counter.get()));
-            }
+//            if(counter.incrementAndGet() % BATCH_SIZE == 0)
+//            {
+//                logger.info(String.format("Persisted [%d] records.", counter.get()));
+//            }
 
         });
     }
@@ -90,7 +90,7 @@ public class CoherenceUseCasesBenchmark
         {
             putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, i, BATCH_SIZE);
             i = i + BATCH_SIZE;
-            logger.info(String.format("Persisted [%d] records.", i));
+//            logger.info(String.format("Persisted [%d] records.", i));
         }
     }
 

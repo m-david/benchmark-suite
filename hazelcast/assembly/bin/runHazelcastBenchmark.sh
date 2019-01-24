@@ -14,7 +14,7 @@ fi
 
 CLASS_PATH="\
 $HAZELCAST_HOME/conf:\
-$HAZELCAST_HOME/jmh-lib/benchmark.hazelcast-1.0-SNAPSHOT-jmh.jar:\
+$HAZELCAST_HOME/benchmark.hazelcast-1.0-SNAPSHOT.jar:\
 $HAZELCAST_HOME/lib/*"
 
 MEM_OPTS="-Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError"

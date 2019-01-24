@@ -14,7 +14,6 @@ fi
 
 CLASS_PATH=\
 $APP_HOME/conf:\
-$APP_HOME/jmh-lib/benchmark.coherence-1.0-SNAPSHOT-jmh.jar:\
 $APP_HOME/benchmark.coherence-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*
 
@@ -39,7 +38,7 @@ JAVA_OPTS="\
 $MEM_OPTS $GC_OPTS"
 
 
-JMH_OPTS="-wi 1 -t 1 -i 1 -f 1 -r 60 -gc true  -rf json -rff $APP_HOME/results/coherence.$TODAY.$APP_PID.json -o $APP_HOME/results/coherence.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -t 80 -i 1 -f 1 -r 60 -gc true  -rf json -rff $APP_HOME/results/coherence.$TODAY.$APP_PID.json -o $APP_HOME/results/coherence.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 JAVA_OPTS="$JAVA_OPTS $1 $2"
 

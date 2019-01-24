@@ -14,7 +14,7 @@ fi
 
 CLASS_PATH="\
 $APP_HOME/conf:\
-$APP_HOME/jmh-lib/benchmark.ignite-1.0-SNAPSHOT-jmh.jar:\
+$APP_HOME/benchmark.ignite-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*"
 
 MEM_OPTS="-Xms4g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
@@ -40,7 +40,7 @@ JAVA_OPTS="-server -showversion \
 $MEM_OPTS \
 $GC_OPTS"
 
-JMH_OPTS="-wi 1 -t 1 -i 1 -f 1 -r 60 -gc true  -rf json -rff $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.json -o $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -t 80 -i 1 -f 1 -r 60 -gc true  -rf json -rff $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.json -o $WORK_DIRECTORY/ignite.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH org.openjdk.jmh.Main IgniteUseCasesBenchmark $JMH_OPTS"
 echo $COMMAND_LINE

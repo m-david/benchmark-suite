@@ -14,7 +14,7 @@ fi
 
 CLASS_PATH="\
 $APP_HOME/conf:\
-$APP_HOME/jmh-lib/benchmark.ignite-1.0-SNAPSHOT-jmh.jar:\
+$APP_HOME/benchmark.ignite-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*"
 
 MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"

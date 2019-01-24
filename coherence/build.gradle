@@ -9,8 +9,6 @@ description = """
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-COHERENCE_VERSION = '12.2.1.3.0'
-
 repositories {
     mavenLocal()
     jcenter()
@@ -22,7 +20,7 @@ dependencies {
 	compile project(':core')
 
     // Coherence Jar
-    compile group: 'com.oracle.coherence', name: 'coherence', version: "${COHERENCE_VERSION}"
+    compile group: 'com.oracle.coherence', name: 'coherence', version: "$COHERENCE_VERSION"
     
     compile 'org.apache.commons:commons-lang3:3.4'
 

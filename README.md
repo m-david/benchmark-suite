@@ -44,7 +44,19 @@ gradle -Dorg.gradle.daemon=false clean buildAll
 ### Build and package each individual application
 
 #### Coherence
+
+##### Due to Oracle licensing constraints, coherence is not available in any maven repository.  Therefore, you must download it first from Oracle Downloads.
+  1. <a href="https://www.oracle.com/technetwork/middleware/coherence/downloads/coherence-archive-165749.html">Download the latest version</a>
+  2. Install the archive locally to your computer and install into maven repository.  Please note that you must update specified version in ./coherence/build.properties if it has changed.  And, example below needs to be updated as well to reflect this.
+  3. Example:
   
+  ```bash
+  $java -jar fmw_12.2.1.3.0_coherence.jar
+  $cd ~/Oracle_home/Middleware/Oracle_home
+  $mvn install:install-file -Dfile=./coherence/lib/coherence.jar -DgroupId=com.oracle.coherence -DartifactId=coherence -Dversion=12.2.1.3.0 -Dpackaging=jar
+  ```
+Now, you can build it ...
+   
 ```bash
 gradle -Dorg.gradle.daemon=false coherence:clean coherence:buildAll
 ```

@@ -8,14 +8,6 @@ description = """
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
-
-COHERENCE_VERSION = '12.2.1.3.0'
-
-repositories {
-    mavenLocal()
-    jcenter()
-
-}
 	
 dependencies {
 

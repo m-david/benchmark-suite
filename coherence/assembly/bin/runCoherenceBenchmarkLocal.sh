@@ -12,10 +12,10 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-CLASS_PATH=\
+CLASS_PATH="\
 $APP_HOME/conf:\
 $APP_HOME/benchmark.coherence-1.0-SNAPSHOT.jar:\
-$APP_HOME/lib/*
+$APP_HOME/lib/*"
 
 MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/coherence-gc.$TODAY.$APP_PID.log"

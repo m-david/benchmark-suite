@@ -12,7 +12,7 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-CLASSPATH="\
+CLASS_PATH="\
 $APP_HOME/conf:\
 $APP_HOME/benchmark.geode-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*"

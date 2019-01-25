@@ -12,7 +12,7 @@ if [ ! -d "$WORK_DIRECTORY" ]; then
   mkdir -p "$WORK_DIRECTORY"
 fi
 
-CLASSPATH="\
+CLASS_PATH="\
 $APP_HOME/conf:\
 $APP_HOME/benchmark.geode-1.0-SNAPSHOT.jar:\
 $APP_HOME/lib/*"
@@ -42,7 +42,7 @@ JAVA_OPTS="-server -showversion \
 -Dbenchmark.range.percent=0.05 \
 $MEM_OPTS $GC_OPTS"
 
-JMH_OPTS="-wi 1 -t 80 -i 1 -f 1 -r 60 -gc true  -rf json -rff $APP_HOME/results/geode.$TODAY.$APP_PID.json -o $APP_HOME/results/geode.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
+JMH_OPTS="-wi 1 -t 8 -i 1 -f 1 -r 60 -gc true  -rf json -rff $APP_HOME/results/geode.$TODAY.$APP_PID.json -o $APP_HOME/results/geode.$TODAY.$APP_PID.txt -jvmArgsAppend -ea"
 
 COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH org.openjdk.jmh.Main GeodeUseCasesBenchmark $JMH_OPTS"
 

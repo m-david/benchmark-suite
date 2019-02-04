@@ -13,8 +13,7 @@ import java.util.Objects;
 
 
 @Data
-public class RiskTrade implements Serializable
-{
+public class RiskTrade implements Serializable, IRiskTrade {
 
     private static final long serialVersionUID = 5064782838786161065L;
 

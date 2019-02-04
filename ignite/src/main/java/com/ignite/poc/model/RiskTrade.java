@@ -13,7 +13,7 @@ import java.util.Hashtable;
  *
  * A simple trade for Kraken Risk.
  */
-final public class RiskTrade implements Serializable {
+final public class RiskTrade implements Serializable, IRiskTrade {
 
 	private static final long serialVersionUID = 5064782838786161065L;
 

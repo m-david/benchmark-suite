@@ -9,6 +9,10 @@ import com.tangosol.util.filter.AllFilter;
 import com.tangosol.util.filter.AndFilter;
 import com.tangosol.util.filter.BetweenFilter;
 import com.tangosol.util.filter.EqualsFilter;
+import common.Bucket;
+import common.BucketImpl;
+import common.core.BaseBenchmark;
+import common.domain.IRiskTrade;
 import common.domain.RiskTrade;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -20,13 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
-import static com.coherence.common.CoherenceBenchmarkHelper.getMeDummyRiskTrades;
 import static com.coherence.poc.serializer.RiskTradeSerializer.*;
 import static common.BenchmarkConstants.*;
 import static common.BenchmarkUtility.getRandom;
@@ -35,29 +36,66 @@ import static common.BenchmarkUtility.getRandomStartIndex;
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @BenchmarkMode({Mode.SampleTime})
-public class CoherenceUseCasesBenchmark
+public class CoherenceUseCasesBenchmark extends BaseBenchmark
 {
 
     private static Logger logger = LoggerFactory.getLogger(CoherenceUseCasesBenchmark.class);
-    private NamedCache<Integer, RiskTrade> riskTradeReadCache;
-    private NamedCache<Integer, RiskTrade> riskTradeOffHeapCache;
+    private Bucket<Integer, IRiskTrade> riskTradeReadCache;
+    private Bucket<Integer, IRiskTrade> riskTradeOffHeapCache;
 
-    private List<RiskTrade> riskTradeList;
+    public Supplier<IRiskTrade> tradeSupplier()
+    {
+        return () -> new RiskTrade();
+    }
+
+    @Override
+    public Bucket<Integer, IRiskTrade> getWriteBucket() {
+        return riskTradeOffHeapCache;
+    }
+
+    @Override
+    public Bucket<Integer, IRiskTrade> getReadBucket() {
+        return riskTradeReadCache;
+    }
+
+    private NamedCache<Integer, IRiskTrade> getMap(Bucket<Integer, IRiskTrade> bucket)
+    {
+        return (NamedCache<Integer, IRiskTrade>) bucket.getMap();
+    }
+
+    // local runner for tests
+    public static void main(String[] args) throws RunnerException
+    {
+        Options opt = new OptionsBuilder()
+                .include("CoherenceUseCasesBenchmark")
+                .warmupIterations(0)
+                .measurementIterations(1)
+                .forks(1)
+                .jvmArgs("-ea")
+                .shouldFailOnError(false) // switch to "true" to fail the complete run
+                .build();
+
+        new Runner(opt).run();
+    }
+
 
     @Setup(Level.Trial)
     public void before()
     {
-        riskTradeReadCache = CacheFactory.getCache(TRADE_READ_MAP);
-        riskTradeOffHeapCache = CacheFactory.getCache(TRADE_OFFHEAP_MAP);
-        riskTradeList = getMeDummyRiskTrades();
-        putRiskTrades(riskTradeReadCache, riskTradeList);
+        NamedCache<Integer, IRiskTrade> readCache = CacheFactory.getCache(TRADE_READ_MAP);
+        NamedCache<Integer, IRiskTrade> offHeapCache = CacheFactory.getCache(TRADE_OFFHEAP_MAP);
+
+        riskTradeReadCache = new  BucketImpl<Integer, IRiskTrade>(readCache);
+        riskTradeOffHeapCache = new BucketImpl<Integer, IRiskTrade>(offHeapCache);
+
+        populateReadCache(NUMBER_OF_TRADES_TO_PROCESS);
 
         ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
-        riskTradeReadCache.addIndex(bookExtractor, false, null);
+        readCache.addIndex(bookExtractor, false, null);
         ValueExtractor idExtractor = new PofExtractor(null, ID);
-        riskTradeReadCache.addIndex(idExtractor, true, null);
+        readCache.addIndex(idExtractor, true, null);
         ValueExtractor salesExtractor = new PofExtractor(null, SALES);
-        riskTradeReadCache.addIndex(salesExtractor, false, null);
+        readCache.addIndex(salesExtractor, false, null);
 
     }
 
@@ -71,46 +109,31 @@ public class CoherenceUseCasesBenchmark
     @Benchmark
     public void b01_InsertTradesSingle() throws Exception
     {
-//        AtomicInteger counter = new AtomicInteger(0);
-        riskTradeList.forEach(riskTrade ->
-        {
-            riskTradeOffHeapCache.put(riskTrade.getId(), riskTrade);
-//            if(counter.incrementAndGet() % BATCH_SIZE == 0)
-//            {
-//                logger.info(String.format("Persisted [%d] records.", counter.get()));
-//            }
-
-        });
+        insertSingleTrades(NUMBER_OF_TRADES_TO_PROCESS);
     }
 
     @Benchmark
     public void b02_InsertTradesBulk(Blackhole blackhole) throws Exception
     {
-        for(int i = 0; i < riskTradeList.size();)
-        {
-            putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, i, BATCH_SIZE);
-            i = i + BATCH_SIZE;
-//            logger.info(String.format("Persisted [%d] records.", i));
-        }
+        insertBulkTrades(NUMBER_OF_TRADES_TO_PROCESS, BATCH_SIZE);
     }
 
     @Benchmark
     public void b03_GetTradeSingle(Blackhole blackhole) throws Exception
     {
-        int index = getRandomStartIndex(riskTradeList.size());
-        blackhole.consume(riskTradeReadCache.get(riskTradeList.get(index).getId()));
+        blackhole.consume(getRandomTrade(NUMBER_OF_TRADES_TO_PROCESS));
     }
 
     @Benchmark
     public void b04_GetTradeOneFilter() throws Exception
     {
-        int id = getRandomStartIndex(riskTradeList.size());
+        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
         String currency = DUMMY_CURRENCY+id;
 
         ValueExtractor valueExtractor = new PofExtractor(null, SETTLE_CURRENCY);
         Filter filter = new EqualsFilter(valueExtractor, currency);
 
-        Collection<RiskTrade> results = riskTradeReadCache.values(filter);
+        Collection<IRiskTrade> results = getMap(riskTradeReadCache).values(filter);
         AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
@@ -124,7 +147,7 @@ public class CoherenceUseCasesBenchmark
     @Benchmark
     public void b05_GetTradesThreeFilter() throws Exception
     {
-        int id = getRandomStartIndex(riskTradeList.size());
+        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -141,7 +164,7 @@ public class CoherenceUseCasesBenchmark
         Filter allFilters =
                 new AllFilter(new Filter[]{currencyFilter, bookFilter, traderNameFilter});
 
-        Collection<RiskTrade> results = riskTradeReadCache.values(allFilters);
+        Collection<IRiskTrade> results = getMap(riskTradeReadCache).values(allFilters);
         AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
@@ -158,13 +181,13 @@ public class CoherenceUseCasesBenchmark
      */
     public void b06_GetTradeIndexedFilter() throws Exception
     {
-        int id = getRandomStartIndex(riskTradeList.size());
+        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
         String book = DUMMY_BOOK+id;
 
         ValueExtractor bookExtractor = new PofExtractor(null, BOOK);
         Filter bookFilter = new EqualsFilter(bookExtractor, book);
 
-        Collection<RiskTrade> results = riskTradeReadCache.values(bookFilter);
+        Collection<IRiskTrade> results = getMap(riskTradeReadCache).values(bookFilter);
         AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
@@ -179,14 +202,14 @@ public class CoherenceUseCasesBenchmark
     @Benchmark
     public void b07_GetTradeIdRangeFilter(Blackhole blackhole) throws Exception
     {
-        int range = (int) (riskTradeList.size() * RANGE_PERCENT);
-        int min = getRandomStartIndex(riskTradeList.size()-range);
+        int range = (int) (NUMBER_OF_TRADES_TO_PROCESS * RANGE_PERCENT);
+        int min = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS-range);
         int max = min + range;
         ValueExtractor idExtractor = new PofExtractor(null, ID);
 
         BetweenFilter betweenFilter = new BetweenFilter(idExtractor, min, max);
 
-        Collection<RiskTrade> results = riskTradeReadCache.values(betweenFilter);
+        Collection<IRiskTrade> results = getMap(riskTradeReadCache).values(betweenFilter);
         AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
@@ -201,8 +224,8 @@ public class CoherenceUseCasesBenchmark
     @Benchmark
     public void b08_GetTradeIdRangeAndBookFilter(Blackhole blackhole) throws Exception
     {
-        int range = (int) (riskTradeList.size() * RANGE_PERCENT);
-        int min = getRandomStartIndex(riskTradeList.size()-range);
+        int range = (int) (NUMBER_OF_TRADES_TO_PROCESS * RANGE_PERCENT);
+        int min = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS-range);
         int max = min + range;
         int bookId = getRandom(min, max);
 
@@ -214,7 +237,7 @@ public class CoherenceUseCasesBenchmark
 
         AndFilter andFilter = new AndFilter(betweenFilter, bookFilter);
 
-        Collection<RiskTrade> results = riskTradeReadCache.values(andFilter);
+        Collection<IRiskTrade> results = getMap(riskTradeReadCache).values(andFilter);
         AtomicInteger counter = new AtomicInteger(0);
         results.forEach(trade ->
         {
@@ -227,39 +250,4 @@ public class CoherenceUseCasesBenchmark
     }
         //endregion
 
-    private static void putAllRiskTradesInBulk(NamedCache<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize)
-    {
-        Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-        int limit = Math.min(riskTradeList.size(), startIndex+batchSize);
-        for (int i = startIndex; i < limit; i++) {
-            RiskTrade riskTrade = riskTradeList.get(i);
-            trades.put(riskTrade.getId(), riskTrade);
-        }
-        riskTradeCache.putAll(trades);
-
-    }
-
-    private static void putRiskTrades(NamedCache riskTradeCache, List<RiskTrade> riskTradeList)
-    {
-        for (RiskTrade riskTrade : riskTradeList)
-        {
-            riskTradeCache.put(riskTrade.getId(), riskTrade);
-        }
-    }
-
-
-    // local runner for tests
-    public static void main(String[] args) throws RunnerException
-    {
-        Options opt = new OptionsBuilder()
-                .include("CoherenceUseCasesBenchmark")
-                .warmupIterations(0)
-                .measurementIterations(1)
-                .forks(1)
-                .jvmArgs("-ea")
-                .shouldFailOnError(false) // switch to "true" to fail the complete run
-                .build();
-
-        new Runner(opt).run();
-    }
 }

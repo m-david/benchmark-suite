@@ -1,7 +1,7 @@
 package com.hazelcast.performance;
 
 import com.hazelcast.poc.domain.dataserializable.RiskTradeDataSerializable;
-import common.domain.RiskTrade;
+import common.domain.IRiskTrade;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class DataSerializableBenchmark extends AbstractHazelcastUseCasesBenchmark {
 
-    Supplier<RiskTrade> tradeSupplier() {
+    public Supplier<IRiskTrade> tradeSupplier() {
         return () -> new RiskTradeDataSerializable();
     }
 

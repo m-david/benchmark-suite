@@ -1,18 +1,13 @@
-package com.hazelcast.performance.support;
+package common.domain;
 
-import common.domain.BuySell;
-import common.domain.Action;
-import common.domain.RiskBond;
-import common.domain.RiskTrade;
-import common.domain.TradeSource;
-import common.domain.TradeStatus;
+import common.Bucket;
 
-
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static common.BenchmarkConstants.*;
 
@@ -23,20 +18,15 @@ import static common.BenchmarkConstants.*;
  *         Twitter: @gamussa
  * @since 0.0.1
  */
-public class DummyData {
+public class DataHelper {
 
-    public static List<RiskTrade> getMeDummyRiskTrades(Supplier<RiskTrade> tradeSupplier) {
-        List<RiskTrade> riskTrades = new ArrayList<RiskTrade>();
-
-        for (int i = 0; i < NUMBER_OF_TRADES_TO_PROCESS; i++)
-        {
-            riskTrades.add(riskTrade(tradeSupplier, i, DUMMY_BOOK+i, DUMMY_TRADER+i, DUMMY_CURRENCY+i));
-        }
-        return riskTrades;
+    public static IRiskTrade createRiskTrade(Supplier<IRiskTrade> tradeSupplier, int id)
+    {
+            return riskTrade(tradeSupplier, id, DUMMY_BOOK+id, DUMMY_TRADER+id, DUMMY_CURRENCY+id);
     }
 
-    public static RiskTrade riskTrade(Supplier<RiskTrade> tradeSupplier, int id, String book, String traderName, String settleCurrency) {
-        RiskTrade riskTrade = tradeSupplier.get();
+    public static IRiskTrade riskTrade(Supplier<IRiskTrade> tradeSupplier, int id, String book, String traderName, String settleCurrency) {
+        IRiskTrade riskTrade = tradeSupplier.get();
         riskTrade.setAccrual(20);
         riskTrade.setAction(Action.DUMMY_RISK);
         riskTrade.setBook(book);
@@ -73,4 +63,29 @@ public class DummyData {
 
         return riskTrade;
     }
+
+    public static void putAllRiskTradesInBulk(Bucket<Integer, IRiskTrade> riskTradeCache, Supplier<IRiskTrade> tradeSupplier, int startIndex, int batchSize)
+    {
+        Map<Integer, IRiskTrade> trades = new HashMap<Integer, IRiskTrade>();
+        int limit = Math.min(NUMBER_OF_TRADES_TO_PROCESS, startIndex+batchSize);
+        IntStream.range(startIndex, limit).forEach(i ->
+        {
+            IRiskTrade riskTrade = createRiskTrade(tradeSupplier, i);
+            trades.put(riskTrade.getId(), riskTrade);
+        });
+
+        riskTradeCache.putAll(trades);
+
+    }
+
+    public static void populateRiskTradeReadCache(Bucket<Integer, IRiskTrade> map, Supplier<IRiskTrade> tradeSupplier, Integer numberOfRecords)
+    {
+        IntStream.range(1, numberOfRecords).parallel().forEach( id ->
+        {
+            IRiskTrade riskTrade = createRiskTrade(tradeSupplier, id);
+            map.set(riskTrade.getId(), riskTrade);
+        });
+
+    }
+
 }

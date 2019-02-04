@@ -1,11 +1,8 @@
 package com.hazelcast.performance;
 
+import common.domain.IRiskTrade;
 import common.domain.RiskTrade;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -15,7 +12,7 @@ import java.util.function.Supplier;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class JavaSerializableBenchmark extends AbstractHazelcastUseCasesBenchmark {
 
-    Supplier<RiskTrade> tradeSupplier() {
+    public Supplier<IRiskTrade> tradeSupplier() {
         return () -> new RiskTrade();
     }
 }

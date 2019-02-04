@@ -123,7 +123,7 @@
             Instead, they introduced the unit-factor setting, which is nothing more than a multiplier for the
             high-units value. In the preceding example, the unit-factor is set to 1 GB, which in combination
             with the high-units setting of 20 limits cache size per node to 20 GB.  Finally, when using a
-            partitioned backing map to support very large caches off-heap, we cannot use the default,
+            partitioned backing map to core very large caches off-heap, we cannot use the default,
             on-heap backup storage. The backup storage is always managed per partition, so we had to
             configure it to use off-heap buffers of the same size as primary storage buffers.
         -->

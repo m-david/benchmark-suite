@@ -25,6 +25,8 @@ ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.90 "cd ./benchmark/ignite/build/distribu
 echo "*******************"
 echo "Deploying to Server-02 ..."
 echo "*******************"
+
+ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.205 "kill -9 $(ps aux | grep ec2-user | grep java | grep -v grep | awk '{print $2}'); "
 ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.205 "cd ./benchmark/coherence/build/distributions; rm -rf lib jmi-lib; "
 ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.205 "cd ./benchmark/geode/build/distributions; rm -rf lib jmi-lib; "
 ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.205 "cd ./benchmark/hazelcast/build/distributions; rm -rf lib jmi-lib; "
@@ -33,6 +35,7 @@ ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.205 "cd ./benchmark/ignite/build/distrib
 echo "*******************"
 echo "Deploying to Server-03..."
 echo "*******************"
+ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.44 "kill -9 $(ps aux | grep ec2-user | grep java | grep -v grep | awk '{print $2}'); "
 ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.44 "cd ./benchmark/coherence/build/distributions; rm -rf lib jmi-lib; "
 ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.44 "cd ./benchmark/geode/build/distributions; rm -rf lib jmi-lib; "
 ssh -i ~/.ssh/id_rsa  ec2-user@172.30.0.44 "cd ./benchmark/hazelcast/build/distributions; rm -rf lib jmi-lib; "

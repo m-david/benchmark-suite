@@ -4,9 +4,10 @@ import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicate;
-import com.hazelcast.simulator.worker.loadsupport.MapStreamer;
-import com.hazelcast.simulator.worker.loadsupport.MapStreamerFactory;
-import common.domain.RiskTrade;
+import common.Bucket;
+import common.BucketImpl;
+import common.core.BaseBenchmark;
+import common.domain.IRiskTrade;
 import org.junit.Test;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -17,41 +18,43 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
-import static com.hazelcast.performance.support.DummyData.getMeDummyRiskTrades;
 import static com.hazelcast.query.Predicates.*;
 import static common.BenchmarkConstants.*;
 import static common.BenchmarkUtility.getRandom;
 import static common.BenchmarkUtility.getRandomStartIndex;
 
 @State(Scope.Thread)
-public abstract class AbstractHazelcastUseCasesBenchmark {
+public abstract class AbstractHazelcastUseCasesBenchmark  extends BaseBenchmark
+{
 
     private static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    abstract Supplier<RiskTrade> tradeSupplier();
-
     private HazelcastInstance hazelcastClient;
-    private IMap<Integer, RiskTrade> riskTradeReadCache;
-    private IMap<Integer, RiskTrade> riskTradeOffHeapCache;
-    private List<RiskTrade> riskTradeList;
+    private Bucket<Integer, IRiskTrade> riskTradeReadCache;
+    private Bucket<Integer, IRiskTrade> riskTradeOffHeapCache;
+
+    @Override
+    public Bucket<Integer, IRiskTrade> getWriteBucket() {
+        return riskTradeOffHeapCache;
+    }
+
+    @Override
+    public Bucket<Integer, IRiskTrade> getReadBucket() {
+        return riskTradeReadCache;
+    }
 
     @Setup(Level.Trial)
     public void before() {
         hazelcastClient = HazelcastClient.newHazelcastClient();
-        riskTradeReadCache = hazelcastClient.getMap(TRADE_READ_MAP);
-        riskTradeOffHeapCache = hazelcastClient.getMap(TRADE_OFFHEAP_MAP);
-        riskTradeList = getMeDummyRiskTrades(tradeSupplier());
+        riskTradeReadCache = new BucketImpl<>(hazelcastClient.getMap(TRADE_READ_MAP));
+        riskTradeOffHeapCache = new BucketImpl<>(hazelcastClient.getMap(TRADE_OFFHEAP_MAP));
 
-        populateReadMap(riskTradeReadCache, riskTradeList);
+        populateReadCache(NUMBER_OF_TRADES_TO_PROCESS);
+
     }
 
     @TearDown(Level.Trial)
@@ -62,7 +65,6 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
             logger.error(e.getLocalizedMessage());
         }
     }
-
 
     @Test
     public void runTests() throws RunnerException {
@@ -90,40 +92,28 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
     @Benchmark
     public void b01_InsertTradeSingle()
     {
-//        AtomicInteger counter = new AtomicInteger(0);
-        riskTradeList.forEach(riskTrade ->
-        {
-            riskTradeOffHeapCache.set(riskTrade.getId(), riskTrade);
-//            if(counter.incrementAndGet() % BATCH_SIZE == 0)
-//            {
-//                logger.info(String.format("Persisted [%d] records.", counter.get()));
-//            }
-        });
+        insertSingleTrades(NUMBER_OF_TRADES_TO_PROCESS);
     }
 
     @Benchmark
     public void b02_InsertTradesBulk()
     {
-        for(int i = 0; i < riskTradeList.size();)
-        {
-            putAllRiskTradesInBulk(riskTradeOffHeapCache, riskTradeList, i, BATCH_SIZE);
-            i = i + BATCH_SIZE;
-//            logger.info(String.format("Persisted [%d] records.", i));
-        }
+        insertBulkTrades(NUMBER_OF_TRADES_TO_PROCESS, BATCH_SIZE);
     }
 
     @Benchmark
-    public void b03_GetTradeSingle(Blackhole blackhole) {
-        int index = getRandomStartIndex(riskTradeList.size());
-        blackhole.consume(riskTradeReadCache.get(index));
+    public void b03_GetTradeSingle(Blackhole blackhole)
+    {
+        blackhole.consume(getRandomTrade(NUMBER_OF_TRADES_TO_PROCESS));
     }
 
     @Benchmark
-    public void b04_GetTradeOneFilter() {
-        int id = getRandomStartIndex(riskTradeList.size());
+    public void b04_GetTradeOneFilter()
+    {
+        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
         String currency = DUMMY_CURRENCY + id;
 
-        Collection<RiskTrade> foundTrades = riskTradeReadCache.values(equal("settleCurrency", currency));
+        Collection<IRiskTrade> foundTrades = getMap(riskTradeReadCache).values(equal("settleCurrency", currency));
         AtomicInteger counter = new AtomicInteger(0);
         foundTrades.forEach(trade ->
         {
@@ -136,7 +126,7 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
 
     @Benchmark
     public void b05_GetTradesThreeFilter() {
-        int id = getRandomStartIndex(riskTradeList.size());
+        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
         String trader = DUMMY_TRADER + id;
         String currency = DUMMY_CURRENCY + id;
         String book = DUMMY_BOOK + id;
@@ -146,7 +136,7 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
                 equal("settleCurrency", currency),
                 equal("book", book)
         );
-        Collection<RiskTrade> result = riskTradeReadCache.values(allFilters);
+        Collection<IRiskTrade> result = getMap(riskTradeReadCache).values(allFilters);
         AtomicInteger counter = new AtomicInteger(0);
         result.forEach(trade -> {
             assert (
@@ -163,9 +153,9 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
 
     @Benchmark
     public void b06_GetTradeIndexedFilter() {
-        int id = getRandomStartIndex(riskTradeList.size());
+        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
         String book = DUMMY_BOOK + id;
-        Collection<RiskTrade> result = riskTradeReadCache.values(equal("book", book));
+        Collection<IRiskTrade> result = getMap(riskTradeReadCache).values(equal("book", book));
         AtomicInteger counter = new AtomicInteger(0);
         result.forEach(trade -> {
             assert (trade.getId() == id);
@@ -177,10 +167,10 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
 
     @Benchmark
     public void b07_GetTradeIdRangeFilter() {
-        int range = (int) (riskTradeList.size() * RANGE_PERCENT);
-        int min = getRandomStartIndex(riskTradeList.size() - range);
+        int range = (int) (NUMBER_OF_TRADES_TO_PROCESS * RANGE_PERCENT);
+        int min = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS - range);
         int max = min + range;
-        Collection<RiskTrade> result = riskTradeReadCache.values(between("id", min, max));
+        Collection<IRiskTrade> result = getMap(riskTradeReadCache).values(between("id", min, max));
         AtomicInteger counter = new AtomicInteger(0);
         result.forEach(trade ->
         {
@@ -194,11 +184,11 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
 
     @Benchmark
     public void b08_GetTradeIdRangeAndBookFilter() {
-        int range = (int) (riskTradeList.size() * RANGE_PERCENT);
-        int min = getRandomStartIndex(riskTradeList.size() - range);
+        int range = (int) (NUMBER_OF_TRADES_TO_PROCESS * RANGE_PERCENT);
+        int min = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS - range);
         int max = min + range;
         String book = DUMMY_BOOK + getRandom(min, max);
-        Collection<RiskTrade> result = riskTradeReadCache.values(and(between("id", min, max), equal("book", book)));
+        Collection<IRiskTrade> result = getMap(riskTradeReadCache).values(and(between("id", min, max), equal("book", book)));
         AtomicInteger counter = new AtomicInteger(0);
         result.forEach(trade ->
         {
@@ -210,27 +200,12 @@ public abstract class AbstractHazelcastUseCasesBenchmark {
 
         assert (counter.get() > 0) : String.format("No trades found for id range: %d and %d", min, max);
     }
+
+    private IMap<Integer, IRiskTrade> getMap(Bucket<Integer, IRiskTrade> bucket)
+    {
+        return (IMap<Integer, IRiskTrade>) bucket.getMap();
+    }
     //endregion
-
-    private static void populateReadMap(IMap<Integer, RiskTrade> riskTradeReadIMap, List<RiskTrade> riskTradeList) {
-        try (MapStreamer<Integer, RiskTrade> mapStreamer = MapStreamerFactory.getInstance(riskTradeReadIMap)) {
-            for (RiskTrade riskTrade : riskTradeList) {
-                mapStreamer.pushEntry(riskTrade.getId(), riskTrade);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to close map streamer!", e);
-        }
-    }
-
-    private static void putAllRiskTradesInBulk(Map<Integer, RiskTrade> riskTradeCache, List<RiskTrade> riskTradeList, int startIndex, int batchSize) {
-        Map<Integer, RiskTrade> trades = new HashMap<Integer, RiskTrade>();
-        int limit = Math.min(riskTradeList.size(), startIndex+batchSize);
-        for (int i = startIndex; i < limit; i++) {
-            RiskTrade riskTrade = riskTradeList.get(i);
-            trades.put(riskTrade.getId(), riskTrade);
-        }
-        riskTradeCache.putAll(trades);
-    }
 
     // local runner for tests
 

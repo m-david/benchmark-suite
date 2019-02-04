@@ -133,7 +133,7 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b04_GetTradeOneFilter(Blackhole blackhole) throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String currency = DUMMY_CURRENCY+id;
 
         Query query = clientCache.getQueryService(POOL_NAME).newQuery("select * from " + getMap(riskTradeReadCache).getFullPath() +
@@ -152,7 +152,7 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b05_GetTradesThreeFilter(Blackhole blackhole) throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String queryString = "select * from " + getMap(riskTradeReadCache).getFullPath() +
                 " e where e.traderName = $1" +
                 " and e.settleCurrency = $2" +
@@ -179,7 +179,7 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
     @Measurement(iterations = ITERATIONS, timeUnit = TimeUnit.MICROSECONDS)
     public void b06_GetTradeIndexedFilter(Blackhole blackhole) throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String book = DUMMY_BOOK+id;
         String queryString =
                 "select * from " +

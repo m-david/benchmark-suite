@@ -53,6 +53,7 @@ allprojects {
         from 'assembly/configs'
         into('bin') {
             from 'assembly/bin'
+            from '../core/assembly/bin'
         }
         into('lib') {
             from 'libs'

@@ -110,7 +110,7 @@ public abstract class AbstractHazelcastUseCasesBenchmark  extends BaseBenchmark
     @Benchmark
     public void b04_GetTradeOneFilter()
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String currency = DUMMY_CURRENCY + id;
 
         Collection<IRiskTrade> foundTrades = getMap(riskTradeReadCache).values(equal("settleCurrency", currency));
@@ -126,7 +126,7 @@ public abstract class AbstractHazelcastUseCasesBenchmark  extends BaseBenchmark
 
     @Benchmark
     public void b05_GetTradesThreeFilter() {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String trader = DUMMY_TRADER + id;
         String currency = DUMMY_CURRENCY + id;
         String book = DUMMY_BOOK + id;
@@ -153,7 +153,7 @@ public abstract class AbstractHazelcastUseCasesBenchmark  extends BaseBenchmark
 
     @Benchmark
     public void b06_GetTradeIndexedFilter() {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String book = DUMMY_BOOK + id;
         Collection<IRiskTrade> result = getMap(riskTradeReadCache).values(equal("book", book));
         AtomicInteger counter = new AtomicInteger(0);

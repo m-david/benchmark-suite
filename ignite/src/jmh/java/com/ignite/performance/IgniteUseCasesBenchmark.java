@@ -104,14 +104,14 @@ public class IgniteUseCasesBenchmark extends BaseBenchmark
     @Benchmark
     public void b03_GetTradeSingle(Blackhole blackhole) throws Exception
     {
-        blackhole.consume(getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS));
+        blackhole.consume(getRandomTrade(NUMBER_OF_TRADES_TO_PROCESS));
     }
 
 
     @Benchmark
     public void b04_GetTradeOneFilter(Blackhole blackhole) throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String currency = DUMMY_CURRENCY+id;
         SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "settleCurrency = ?");
         query.setArgs(currency);
@@ -131,7 +131,7 @@ public class IgniteUseCasesBenchmark extends BaseBenchmark
     @Benchmark
     public void b05_GetTradesThreeFilter(Blackhole blackhole) throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -164,7 +164,7 @@ public class IgniteUseCasesBenchmark extends BaseBenchmark
     @Benchmark
     public void b06_GetTradeIndexedFilter(Blackhole blackhole) throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         SqlQuery<Integer, RiskTrade> query = new SqlQuery<>(RiskTrade.class, "book = ?");
         String book = DUMMY_BOOK+id;
         query.setArgs(book);

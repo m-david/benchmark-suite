@@ -127,7 +127,7 @@ public class CoherenceUseCasesBenchmark extends BaseBenchmark
     @Benchmark
     public void b04_GetTradeOneFilter() throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String currency = DUMMY_CURRENCY+id;
 
         ValueExtractor valueExtractor = new PofExtractor(null, SETTLE_CURRENCY);
@@ -147,7 +147,7 @@ public class CoherenceUseCasesBenchmark extends BaseBenchmark
     @Benchmark
     public void b05_GetTradesThreeFilter() throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String trader = DUMMY_TRADER+id;
         String currency = DUMMY_CURRENCY+id;
         String book = DUMMY_BOOK+id;
@@ -181,7 +181,7 @@ public class CoherenceUseCasesBenchmark extends BaseBenchmark
      */
     public void b06_GetTradeIndexedFilter() throws Exception
     {
-        int id = getRandomStartIndex(NUMBER_OF_TRADES_TO_PROCESS);
+        int id = getRandom();
         String book = DUMMY_BOOK+id;
 
         ValueExtractor bookExtractor = new PofExtractor(null, BOOK);

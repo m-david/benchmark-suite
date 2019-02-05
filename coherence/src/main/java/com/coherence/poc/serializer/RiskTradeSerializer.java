@@ -10,7 +10,8 @@ import java.util.Date;
 import java.util.Hashtable;
 
 
-public class RiskTradeSerializer  implements PofSerializer  {
+public class RiskTradeSerializer  implements PofSerializer<RiskTrade>
+{
 
 	public static final int ID = 0;
 	public static final int SETTLE_CURRENCY = 10;
@@ -18,7 +19,7 @@ public class RiskTradeSerializer  implements PofSerializer  {
 	public static final int TRADER_NAME = 12;
 	public static final int SALES = 26;
 
-	public Object deserialize(PofReader in) 
+	public RiskTrade deserialize(PofReader in)
 			   throws IOException 
 			   {
 				
@@ -132,11 +133,9 @@ public class RiskTradeSerializer  implements PofSerializer  {
 			   }
 			 
 	
-	public void serialize(PofWriter out, Object o) 
+	public void serialize(PofWriter out, RiskTrade trade)
 			   throws IOException 
 			   {
-				RiskTrade  trade = (RiskTrade) o;
-				
 				try {
 					out.writeInt(ID, trade.getId());
 					out.writeString(1, trade.getEcnTradeId());

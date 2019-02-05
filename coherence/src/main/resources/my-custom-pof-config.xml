@@ -47,6 +47,21 @@
 				<class-name>com.tangosol.io.pof.EnumPofSerializer</class-name>
 			</serializer>
 		</user-type>
+		<user-type>
+			<type-id>1172</type-id>
+			<class-name>common.domain.RiskBond</class-name>
+			<serializer>
+				<class-name>com.coherence.poc.serializer.RiskBondSerializer</class-name>
+			</serializer>
+		</user-type>
+		<user-type>
+			<type-id>1173</type-id>
+			<class-name>common.domain.RiskProduct</class-name>
+			<serializer>
+				<class-name>com.coherence.poc.serializer.RiskBondSerializer</class-name>
+			</serializer>
+		</user-type>
+
 	</user-type-list>
 </pof-config>
 

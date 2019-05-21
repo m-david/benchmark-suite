@@ -15,6 +15,7 @@ fi
 CLASS_PATH="\
 $APP_HOME/conf:\
 $APP_HOME/benchmark.geode-1.0-SNAPSHOT.jar:\
+$APP_HOME/jmh-lib/*:\
 $APP_HOME/lib/*"
 
 MEM_OPTS="-Xms2g -Xmx2g -XX:+HeapDumpOnOutOfMemoryError"

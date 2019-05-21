@@ -15,4 +15,9 @@
     <region name="RiskTradeMapRead" refid="PROXY"/>
     <region name="RiskTradeMapOffheap" refid="PROXY"/>
 
+    <region name="payloadMap" refid="PROXY"/>
+    <region name="payloadPersistentOverflowMap" refid="PROXY"/>
+    <region name="payloadPersistentMap" refid="PROXY"/>
+    <region name="payloadOverflowMap" refid="PROXY"/>
+
 </client-cache>

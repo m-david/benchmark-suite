@@ -4,14 +4,14 @@ PRG="$0"
 PRGDIR=`dirname "$PRG"`
 APP_HOME=`cd "$PRGDIR/.." >/dev/null; pwd`
 
-SERVER_HOME=$APP_HOME/locator1
+SERVER_HOME=$APP_HOME/server1
 if [ ! -d "$SERVER_HOME" ]; then
   mkdir -p "$SERVER_HOME"
 fi
 
 cd $SERVER_HOME
 
-MEMBER_NAME=locator1
+MEMBER_NAME=server1
 WORK_DIRECTORY="$SERVER_HOME/logs"
 
 APP_PID=$RANDOM
@@ -29,14 +29,17 @@ MEM_OPTS="-Xms512m -Xmx512m -XX:+HeapDumpOnOutOfMemoryError"
 GC_OPTS="-XX:+UseG1GC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -Xloggc:$WORK_DIRECTORY/geode-gc.$TODAY.$APP_PID.log"
 JAVA_OPTS="-server -showversion \
  -Dgemfire.log-file=$WORK_DIRECTORY/geode.$TODAY.$APP_PID.log \
- -Dgemfire.locators=127.0.0.1[10680] \
- -Dgemfire.locator-port=10680 \
- -Dgemfire.jmx-manager-port=1099 \
- -Dgemfire.jmx-manager-http-port=8099 \
- -Dgemfire.bind-address=127.0.0.1 \
+ -Dgemfire.locators=localhost[10680] \
+ -Dgemfire.cache-xml-file=$APP_HOME/conf/geode-server-payload.xml \
+ -Dgemfire.server-port=40405 \
+ -Dgemfire.jmx-manager-port=2099 \
+ -Dgemfire.bind-address=localhost \
  -Dgemfire.name=$MEMBER_NAME \
+ -Dgemfire.off-heap-memory-size=512M \
+ -Dgemfire.critical-off-heap-percentage=90 \
+ -Dgemfire.eviction-off-heap-percentage=80 \
  $MEM_OPTS $GC_OPTS"
 
-COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH  com.geode.poc.GeodeLocator"
+COMMAND_LINE="java $JAVA_OPTS -cp $CLASS_PATH  com.geode.poc.GeodeMember"
 echo $COMMAND_LINE
 $COMMAND_LINE

@@ -29,6 +29,7 @@ public class GeodeMember
                 .set("locators", locators)
                 .set("off-heap-memory-size", offHeapMemorySize)
                 .set("log-file", logFile)
+                .set("mcast-port", "0")
                 .setCriticalOffHeapPercentage(Float.valueOf(criticalOffHeapPercentage))
                 .setEvictionOffHeapPercentage(Float.valueOf(evictionOffHeapPercentage))
                 .build();

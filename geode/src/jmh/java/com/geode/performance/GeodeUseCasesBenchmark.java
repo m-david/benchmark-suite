@@ -44,7 +44,7 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
 
     private static Logger logger = LoggerFactory.getLogger(GeodeUseCasesBenchmark.class);
 
-    public ClientCache clientCache;
+    public ClientCache cacheProxy;
     public Bucket<Integer, IRiskTrade> riskTradeReadCache;
     public Bucket<Integer, IRiskTrade> riskTradeOffHeapCache;
 
@@ -69,9 +69,9 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
     {
         ClientCacheFactory ccf = connectStandalone("my-test");
         ccf.setPoolSubscriptionEnabled(true);
-        clientCache = ccf.create();
-        riskTradeReadCache = new BucketImpl<>(clientCache.getRegion(TRADE_READ_MAP));
-        riskTradeOffHeapCache = new BucketImpl<>(clientCache.getRegion(TRADE_OFFHEAP_MAP));
+        cacheProxy = ccf.create();
+        riskTradeReadCache = new BucketImpl<>(cacheProxy.getRegion(TRADE_READ_MAP));
+        riskTradeOffHeapCache = new BucketImpl<>(cacheProxy.getRegion(TRADE_OFFHEAP_MAP));
 
         populateReadCache(NUMBER_OF_TRADES_TO_PROCESS);
     }
@@ -79,7 +79,7 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
     @TearDown(Level.Trial)
     public void afterAll()
     {
-        clientCache.close();
+        cacheProxy.close();
     }
 
     private static ClientCacheFactory connectStandalone(String name)
@@ -136,7 +136,7 @@ public class GeodeUseCasesBenchmark extends BaseBenchmark
         int id = getRandom();
         String currency = DUMMY_CURRENCY+id;
 
-        Query query = clientCache.getQueryService(POOL_NAME).newQuery("select * from " + getMap(riskTradeReadCache).getFullPath() +
+        Query query = cacheProxy.getQueryService(POOL_NAME).newQuery("select * from " + getMap(riskTradeReadCache).getFullPath() +
                 " e where e.settleCurrency = $1");
         SelectResults<RiskTrade> results = (SelectResults) query.execute(currency);
         AtomicInteger counter = new AtomicInteger(0);

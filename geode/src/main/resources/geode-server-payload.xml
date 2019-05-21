@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+    version="1.0"
+    is-server="true"
+>
+
+    <cache-server port="40401" >
+
+    </cache-server>
+
+        <disk-store name="myPersistentStore" compaction-threshold="40"
+                    auto-compact="false" allow-force-compaction="true"
+                    max-oplog-size="512" queue-size="10000"
+                    time-interval="15" write-buffer-size="65536"
+                    disk-usage-warning-percentage="80"
+                    disk-usage-critical-percentage="98">
+            <disk-dirs>
+                <disk-dir dir-size="20480">./payload_persistence_data</disk-dir>
+            </disk-dirs>
+        </disk-store>
+
+    <region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>
+
+    <region name="RiskTradeMapRead">
+        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+        <index name="riskTradeMapRead_book_idx" from-clause="/RiskTradeMapRead" expression="book" type="range"/>
+        <index name="riskTradeMapRead_id_idx"   from-clause="/RiskTradeMapRead" expression="id" type="range"/>
+        <index name="riskTradeMapRead_sales_idx"   from-clause="/RiskTradeMapRead" expression="salesPerson"/>
+    </region>
+
+    <region name="RiskTradeMapOffheap">
+        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+        <!--<region-attributes refid="PARTITION_REDUNDANT" />-->
+    </region>
+
+    <region name="payloadMap">
+        <region-attributes refid="PARTITION_PERSISTENT">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+    </region>
+
+    <region name="payloadPersistentMap">
+        <region-attributes refid="PARTITION_PERSISTENT" disk-store-name="myPersistentStore">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+    </region>
+
+
+    <region name="payloadPersistentOverflowMap">
+        <region-attributes refid="PARTITION_PERSISTENT" off-heap="true" disk-store-name="myPersistentStore">
+            <partition-attributes redundant-copies="1"/>
+            <eviction-attributes>
+                <lru-entry-count maximum="25000" action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+
+
+    <region name="payloadOverflowMap">
+        <region-attributes refid="PARTITION_REDUNDANT" disk-store-name="myPersistentStore">
+            <partition-attributes redundant-copies="1"/>
+            <eviction-attributes>
+                <lru-entry-count maximum="25000" action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+
+</cache>
+

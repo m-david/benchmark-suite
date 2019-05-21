@@ -11,7 +11,7 @@
 
     </cache-server>
 
-    <!--<region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>-->
+    <region name="RiskTradeMap" refid="PARTITION_REDUNDANT"/>
 
     <region name="RiskTradeMapRead">
         <region-attributes refid="PARTITION_REDUNDANT" off-heap="true">

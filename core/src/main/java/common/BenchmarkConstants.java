@@ -9,7 +9,8 @@ package common;
  **/
 public class BenchmarkConstants
 {
-    public static final int NUMBER_OF_TRADES_TO_PROCESS = Integer.valueOf(System.getProperty("benchmark.record.count", "100000"));
+    public static final int
+            NUMBER_OF_TRADES_TO_PROCESS = Integer.valueOf(System.getProperty("benchmark.record.count", "100000"));
     public static final int ITERATIONS = 5;
     public static final int CARDINALITY = 10000;
 

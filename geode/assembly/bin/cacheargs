@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+usage () { echo -e "\n\tUsage : $0 \
+\n\t\t-b <bind-address: 127.0.0.1> \
+\n\t\t-n <server-name: my-server-1> \
+\n\t\t-x <cache-xml: gemfire-server.xml> \
+\n\t\t-l <locators: 127.0.0.1[10680]> \
+\n\t\t-s <server-port: 10680> \
+\n\t\t-j <jmx-port: 2099> \
+\n\t\t-t <http-port: 8099 (locator only)> \
+\n\t\t-o <off-heap-size: 512M> \
+\n\t\t-h <heap-size: 512M> \
+\n\t\t-f <disk-sync: true or false> \
+\n\t\t-u <usage: this> \
+\n"; }
+
+
+BIND_ADDR=localhost
+SRV_NAME=server1
+CACHE_XML=geode-server.xml
+LOCATORS=localhost[10680]
+SRV_PORT=40405
+JMX_PORT=2099
+HTTP_PORT=8099
+OFF_HEAP_SIZE=512M
+HEAP_SIZE=512M
+DISK_SYNC=false
+
+while getopts b:n:x:l:s:j:t:o:h:f:u option
+do
+    case "${option}"
+    in
+
+        b) BIND_ADDR=${OPTARG};;
+        n) SRV_NAME=${OPTARG};;
+        x) CACHE_XML=${OPTARG};;
+        l) LOCATORS=${OPTARG};;
+        s) SRV_PORT=${OPTARG};;
+        j) JMX_PORT=${OPTARG};;
+        t) HTTP_PORT=${OPTARG};;
+        o) OFF_HEAP_SIZE=${OPTARG};;
+        h) HEAP_SIZE=${OPTARG};;
+        f) DISK_SYNC=${OPTARG};;
+        u) usage; exit 1;;
+    esac
+done
+
+echo BIND_ADDR       : $BIND_ADDR
+echo SRV_NAME        : $SRV_NAME
+echo CACHE_XML       : $CACHE_XML
+echo LOCATORS        : $LOCATORS
+echo SRV_PORT        : $SRV_PORT
+echo JMX_PORT        : $JMX_PORT
+echo HTTP_PORT       : $HTTP_PORT
+echo OFF_HEAP_SIZE   : $OFF_HEAP_SIZE
+echo HEAP_SIZE       : $HEAP_SIZE
+echo DISK_SYNC       : DISK_SYNC
+
+export BIND_ADDR
+export SRV_NAME
+export CACHE_XML       
+export LOCATORS        
+export SRV_PORT        
+export JMX_PORT
+export HTTP_PORT
+export OFF_HEAP_SIZE   
+export HEAP_SIZE       
+export DISK_SYNC

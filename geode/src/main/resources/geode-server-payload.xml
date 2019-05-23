@@ -41,13 +41,20 @@
     </region>
 
     <region name="payloadMap">
-        <region-attributes refid="PARTITION_PERSISTENT">
+        <region-attributes refid="PARTITION_PERSISTENT" >
             <partition-attributes redundant-copies="1"/>
         </region-attributes>
     </region>
 
+    <region name="payloadOffHeapMap">
+        <region-attributes refid="PARTITION_PERSISTENT" off-heap="true">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+    </region>
+
+
     <region name="payloadPersistentMap">
-        <region-attributes refid="PARTITION_PERSISTENT" disk-store-name="myPersistentStore">
+        <region-attributes refid="PARTITION_PERSISTENT" off-heap="true" disk-store-name="myPersistentStore">
             <partition-attributes redundant-copies="1"/>
         </region-attributes>
     </region>
@@ -64,7 +71,7 @@
 
 
     <region name="payloadOverflowMap">
-        <region-attributes refid="PARTITION_REDUNDANT" disk-store-name="myPersistentStore">
+        <region-attributes refid="PARTITION_REDUNDANT" off-heap="true" disk-store-name="myPersistentStore">
             <partition-attributes redundant-copies="1"/>
             <eviction-attributes>
                 <lru-entry-count maximum="25000" action="overflow-to-disk"/>

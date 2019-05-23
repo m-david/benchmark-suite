@@ -34,6 +34,7 @@ public class GeodePayloadBenchmark {
     private static final String PAYLOAD_PERSISTENT_OVERFLOW_MAP     = "payloadPersistentOverflowMap";
     private static final String PAYLOAD_PERSISTENT_MAP     = "payloadPersistentMap";
     private static final String PAYLOAD_OVERFLOW_MAP                = "payloadOverflowMap";
+    private static final String PAYLOAD_OFFHEAP_MAP                = "payloadOffHeapMap";
 
     public static final String REGION_MODE = System.getProperty("benchmark.mode", "Normal");
 
@@ -108,6 +109,9 @@ public class GeodePayloadBenchmark {
                 break;
             case Persistent:
                 payloadMap = clientCache.getRegion(PAYLOAD_PERSISTENT_MAP);
+                break;
+            case OffHeap:
+                payloadMap = clientCache.getRegion(PAYLOAD_OFFHEAP_MAP);
                 break;
             default:
                 payloadMap = clientCache.getRegion(PAYLOAD_MAP);

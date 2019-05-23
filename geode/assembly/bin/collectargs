@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+usage () { echo "Usage : $0 -m <mode : Normal,  OffHeap,  Overflow,  Persistent,  PersistentOverflow> -s <bytes size> -r <record count>"; }
+
+SIZE=1024
+RECORDS=100000
+MODE=Normal
+LOCATOR_HOST=127.0.0.1
+LOCATOR_PORT=10680
+
+while getopts m:s:r:l:p: option
+do
+    case "${option}"
+    in
+        m) MODE=${OPTARG};;
+        s) SIZE=${OPTARG};;
+        r) RECORDS=${OPTARG};;
+        l) LOCATOR_HOST=${OPTARG};;
+        p) LOCATOR_PORT=${OPTARG};;
+    esac
+done
+
+echo Mode        : $MODE
+echo Size        : $SIZE
+echo Records     : $RECORDS
+echo Locator Host: $LOCATOR_HOST
+echo Locator Port: $LOCATOR_PORT
+
+export MODE
+export SIZE
+export RECORDS
+export LOCATOR_HOST
+export LOCATOR_PORT
+

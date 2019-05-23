@@ -4,5 +4,6 @@ public enum PayloadMode {
     Normal,
     PersistentOverflow,
     Persistent,
-    Overflow
+    Overflow,
+    OffHeap
 }

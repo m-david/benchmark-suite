@@ -14,7 +14,7 @@ public class GeodeLocator
 
         String logFile = System.getProperty("gemfire.log-file", "locator.log");
 
-        String jmxPort = System.getProperty("gemfire.jmx-manager-port", "1099");
+        String jmxPort = System.getProperty("gemfire.jmx-manager-port", "1098");
         String jmxHttpPort = System.getProperty("gemfire.jmx-manager-http-port", "8099");
 
 //        String locator = String.format("%s[%d]", bindAddress, locatorPort);

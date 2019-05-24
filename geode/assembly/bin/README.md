@@ -1,10 +1,17 @@
+# Build
+Please refer to <a href="https://github.com/m-david/benchmark-suite">Benchmark-Suite Home Page</a>
+
+* Deploy ./geode/build/distributions/benchmark.geode-1.0-SNAPSHOT.tar 
+by untarring to a directory.
+
+
 ## Cheat Sheet for Running Scripts
 
 
-## Start Geode Locator Locally:
+## Start Geode Locator:
 
 ```$xslt
-./startLocator.sh \
+Usage : ./startLocator.sh \
     -b <bind-address> \
     -n <locator-name> \
     -s <server-port> \
@@ -15,12 +22,30 @@
     
 ```
 
-
+### Start Locally:
 ```
 $ ./startLocator.sh -b 127.0.0.1 -n locator1 -s 10680 -l 127.0.0.1[10680] -t 8099 -j 1099 -o 256m -h 256m &
 ```
 
-## Start Geode Member Locally:
+## Start Geode Member
+
+```$xslt
+	Usage : ./cacheargs 
+		-b <bind-address: 127.0.0.1> 
+		-n <server-name: my-server-1> 
+		-x <cache-xml: gemfire-server.xml> 
+		-l <locators: 127.0.0.1[10680]> 
+		-s <server-port: 10680> 
+		-j <jmx-port: 2099> 
+		-t <http-port: 8099 (locator only)> 
+		-o <off-heap-size: 512M> 
+		-h <heap-size: 512M> 
+		-f <disk-sync: true or false> 
+		-u <usage: this> 
+
+```
+
+### Start Locally:
 
 ### Node 1:
 ```
@@ -36,7 +61,7 @@ $ ./startMember.sh -b 127.0.0.1 -n server2 -s 40406 -l 127.0.0.1[10680] -j 2098 
 ## Payload Benchmark Test
 
 ```$xslt
-./runPayload.sh -m <mode> -s <size-in-bytes> -r <record-count>
+Usage:  ./runPayload.sh -m <mode> -s <size-in-bytes> -r <record-count>
 ```
 
 Modes:

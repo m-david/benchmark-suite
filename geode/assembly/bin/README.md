@@ -30,7 +30,7 @@ $ ./startLocator.sh -b 127.0.0.1 -n locator1 -s 10680 -l 127.0.0.1[10680] -t 809
 ## Start Geode Member
 
 ```$xslt
-	Usage : ./cacheargs 
+	Usage : ./startMember.sh 
 		-b <bind-address: 127.0.0.1> 
 		-n <server-name: my-server-1> 
 		-x <cache-xml: gemfire-server.xml> 

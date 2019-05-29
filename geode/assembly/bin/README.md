@@ -31,7 +31,8 @@ $ ./startLocator.sh -b 127.0.0.1 -n locator1 -s 10680 -l 127.0.0.1[10680] -t 809
 
 ```$xslt
 	Usage : ./startMember.sh 
-		-b <bind-address: 127.0.0.1> 
+		-b <bind-address: 127.0.0.1>
+		-f <writeSync-fsync-true-or-false> 
 		-n <server-name: my-server-1> 
 		-x <cache-xml: gemfire-server.xml> 
 		-l <locators: 127.0.0.1[10680]> 
@@ -106,15 +107,6 @@ Modes:
 ./runPayload.sh -m Persistent -s 5120 -r 200000 &
 ```
 
-
-### PersistentOverflow-Async
-```$xslt
-./startLocator.sh -b 127.0.0.1 -n locator1 -s 10680 -l 127.0.0.1[10680] -t 8099 -j 1099 -o 256m -h 256m &
-./startMember.sh -b 127.0.0.1 -n server1 -s 40405 -l 127.0.0.1[10680] -j 2099 -o 2g -h 512m -x geode-server-payload.xml &
-./startMember.sh -b 127.0.0.1 -n server2 -s 40406 -l 127.0.0.1[10680] -j 2098 -o 2g -h 512m -x geode-server-payload.xml &
-./runPayload.sh -m PersistentOverflow -s 5120 -r 200000 &
-```
-
 ### Persistent-Sync
 ```$xslt
 ./startLocator.sh -b 127.0.0.1 -n locator1 -s 10680 -l 127.0.0.1[10680] -t 8099 -j 1099 -o 256m -h 256m &
@@ -123,6 +115,18 @@ Modes:
 ./runPayload.sh -m Persistent -s 5120 -r 200000 &
 ```
 
+Notes:
+  * On AWS, due to frequent timeouts, increased heap-size to 2g
+  
+  
+  
+### PersistentOverflow-Async
+```$xslt
+./startLocator.sh -b 127.0.0.1 -n locator1 -s 10680 -l 127.0.0.1[10680] -t 8099 -j 1099 -o 256m -h 256m &
+./startMember.sh -b 127.0.0.1 -n server1 -s 40405 -l 127.0.0.1[10680] -j 2099 -o 2g -h 512m -x geode-server-payload.xml &
+./startMember.sh -b 127.0.0.1 -n server2 -s 40406 -l 127.0.0.1[10680] -j 2098 -o 2g -h 512m -x geode-server-payload.xml &
+./runPayload.sh -m PersistentOverflow -s 5120 -r 200000 &
+```
 
 ### PersistentOverflow-Sync
 ```$xslt
